@@ -135,7 +135,7 @@ signing {
     val publishing: PublishingExtension by project
 
     useInMemoryPgpKeys(key, password)
-    sign(publishing.publications)
+    sign(publishing.publications["mavenJava"])
 }
 
 tasks.test {
