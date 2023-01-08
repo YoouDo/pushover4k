@@ -1,6 +1,6 @@
 # Pushover4k
 
-![master](https://github.com/YoouDo/pushover4k/actions/workflows/master.yaml/badge.svg)
+![master](https://github.com/YoouDo/pushover4k/actions/workflows/master.yaml/badge.svg) [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=YoouDo_pushover4k&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=YoouDo_pushover4k)
 
 ### A Pushover client in Kotlin
 

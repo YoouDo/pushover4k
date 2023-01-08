@@ -120,7 +120,7 @@ publishing {
     repositories {
         maven {
             name = "OSSRH"
-            setUrl("https://oss.sonatype.org/service/local/staging/deploy/maven2")
+            setUrl("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
             credentials {
                 username = System.getenv("OSSRH_USER") ?: return@credentials
                 password = System.getenv("OSSRH_PASSWORD") ?: return@credentials
@@ -150,7 +150,7 @@ tasks.jacocoTestReport {
     }
 }
 
-sonarqube {
+sonar {
     properties {
         property("sonar.projectKey", "YoouDo_pushover4k")
         property("sonar.organization", "yooudo")
