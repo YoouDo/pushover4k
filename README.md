@@ -1,4 +1,7 @@
 # Pushover4k
+
+![master](https://github.com/YoouDo/pushover4k/actions/workflows/master.yaml/badge.svg)
+
 ### A Pushover client in Kotlin
 
 A simple library to use [Pushover](https://www.pushover.net) messages in Kotlin applications.

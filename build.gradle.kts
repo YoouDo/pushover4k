@@ -15,6 +15,7 @@ plugins {
     `maven-publish`
     signing
     jacoco
+    id("org.sonarqube") version "3.5.0.2730"
 }
 
 group = "de.kleinkop"
@@ -143,4 +144,16 @@ tasks.test {
 
 tasks.jacocoTestReport {
     dependsOn(tasks.test)
+
+    reports {
+        xml.required.set(true)
+    }
+}
+
+sonarqube {
+    properties {
+        property("sonar.projectKey", "YoouDo_pushover4k")
+        property("sonar.organization", "yooudo")
+        property("sonar.host.url", "https://sonarcloud.io")
+    }
 }
