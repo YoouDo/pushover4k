@@ -1,0 +1,19 @@
+{
+    "request": {
+        "method": "GET",
+        "url": "/1/sounds.json?token=app-token"
+    },
+    "response": {
+        "status": 200,
+        "jsonBody": {
+            "sounds": {
+                "soundname": "description"
+            },
+            "status": 1,
+            "request": "A"
+        },
+        "headers": {
+            "Content-Type": "application/json"
+        }
+    }
+}

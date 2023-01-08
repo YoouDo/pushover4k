@@ -1,0 +1,49 @@
+# name of the workflow
+name: publishVersion
+
+# triggers on version tags with SemVer format
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      TAG_NAME: ${{ github.ref_name }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Build and publish with gradle
+        run: ./gradlew clean publish
+        env:
+          OSSRH_USER: ${{ secrets.OSSRH_USER }}
+          OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: pushover4k
+          path: build/libs
+
+      - name: Send Pushover message
+        uses: umahmood/pushover-actions@main
+        env:
+          PUSHOVER_TOKEN: ${{ secrets.PUSHOVER_TOKEN }}
+          PUSHOVER_USER: ${{ secrets.PUSHOVER_USER }}
+        with:
+          status: ${{ job.status }}
+          title: pushover4k version ${{ env.TAG_NAME }}
+          message: Build for version ${{ env.TAG_NAME }}
+          device: ${{ secrets.PUSHOVER_DEVICES }}
+

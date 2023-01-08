@@ -1,0 +1,16 @@
+{
+    "request": {
+        "method": "POST",
+        "url": "/1/receipts/R/cancel.json"
+    },
+    "response": {
+        "status": 200,
+        "jsonBody": {
+            "status": 1,
+            "request": "E"
+        },
+        "headers": {
+            "Content-Type": "application/json"
+        }
+    }
+}

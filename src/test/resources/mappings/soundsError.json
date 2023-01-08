@@ -1,0 +1,20 @@
+{
+    "request": {
+        "method": "GET",
+        "url": "/1/sounds.json?token=invalid-token"
+    },
+    "response": {
+        "status": 200,
+        "jsonBody": {
+            "token": "invalid",
+            "errors": [
+                "application token is invalid"
+            ],
+            "status": 0,
+            "request": "error-request"
+        },
+        "headers": {
+            "Content-Type": "application/json"
+        }
+    }
+}

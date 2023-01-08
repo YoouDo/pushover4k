@@ -1,0 +1,298 @@
+package de.kleinkop.pushover4k
+
+import com.github.tomakehurst.wiremock.client.WireMock.findAll
+import com.github.tomakehurst.wiremock.client.WireMock.get
+import com.github.tomakehurst.wiremock.client.WireMock.okJson
+import com.github.tomakehurst.wiremock.client.WireMock.post
+import com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
+import com.github.tomakehurst.wiremock.client.WireMock.stubFor
+import com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo
+import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo
+import com.github.tomakehurst.wiremock.junit5.WireMockTest
+import com.github.tomakehurst.wiremock.verification.LoggedRequest
+import de.kleinkop.pushover4k.client.Message
+import de.kleinkop.pushover4k.client.Priority
+import de.kleinkop.pushover4k.client.PushoverClient
+import de.kleinkop.pushover4k.client.PushoverRestClient
+import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.matchers.collections.shouldHaveSize
+import io.kotest.matchers.nulls.shouldNotBeNull
+import io.kotest.matchers.shouldBe
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Test
+import java.io.File
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+
+@WireMockTest
+class PushoverClientTest {
+
+    @Test
+    fun `Fetch sounds`() {
+        pushoverClient.getSounds().apply {
+            status shouldBe 1
+            request shouldBe "A"
+        }
+
+        invalidClient.getSounds().apply {
+            status shouldBe 0
+            sounds shouldBe null
+            token shouldBe "invalid"
+            errors
+                .shouldNotBeNull()
+                .shouldHaveSize(1)
+                .first() shouldBe "application token is invalid"
+            request shouldBe "error-request"
+        }
+    }
+
+    @Test
+    fun `Create invalid messages`() {
+        // emergency msg without retry and expiration
+        shouldThrow<IllegalArgumentException> {
+            Message(
+                message = "msg",
+                priority = Priority.EMERGENCY,
+            )
+        }
+
+        // emergency msg without expiration
+        shouldThrow<IllegalArgumentException> {
+            Message(
+                message = "msg",
+                priority = Priority.EMERGENCY,
+                retry = 30,
+            )
+        }
+
+        // emergency msg without retry
+        shouldThrow<IllegalArgumentException> {
+            Message(
+                message = "msg",
+                priority = Priority.EMERGENCY,
+                expire = 60,
+            )
+        }
+
+        // Message with options html and monospace
+        shouldThrow<IllegalArgumentException> {
+            Message(
+                message = "msg",
+                html = true,
+                monospace = true
+            )
+        }
+    }
+
+    @Test
+    fun `Send a simple message`() {
+        stubFor(
+            post("/1/messages.json")
+                .willReturn(
+                    okJson(
+                        """
+                            {
+                                "status": 1,
+                                "request": "B"
+                            }                            
+                        """.trimIndent()
+                    )
+                )
+        )
+
+        pushoverClient.sendMessage(
+            Message(
+                message = "Testing",
+            )
+        ).apply {
+            status shouldBe 1
+            request shouldBe "B"
+        }
+
+        findAll(postRequestedFor(urlPathEqualTo("/1/messages.json")))
+            .filter { it.isMultipart }
+            .shouldHaveSize(1)
+            .first()
+            .apply {
+                partAsString("token") shouldBe "app-token"
+                partAsString("user") shouldBe "user-token"
+                partAsString("message") shouldBe "Testing"
+            }
+    }
+
+    @Test
+    fun `Send an emergency message`() {
+        stubsForEmergencyMessage()
+
+        pushoverClient.sendMessage(
+            Message(
+                message = "Testing emergency",
+                priority = Priority.EMERGENCY,
+                retry = 100,
+                expire = 200,
+                tags = listOf("TAG"),
+                timestamp = LocalDateTime.now(),
+                image = File(PushoverClientTest::class.java.getResource("/image.png")!!.file),
+
+            )
+        ).apply {
+            status shouldBe 1
+            request shouldBe "C"
+            receipt shouldBe "R"
+        }
+
+        findAll(postRequestedFor(urlPathEqualTo("/1/messages.json")))
+            .filter { it.isMultipart }
+            .shouldHaveSize(1)
+            .first()
+            .apply {
+                partAsString("retry") shouldBe "100"
+                partAsString("expire") shouldBe "200"
+                partAsString("priority") shouldBe "2"
+                partAsString("tags") shouldBe "TAG"
+            }
+
+        pushoverClient.getEmergencyState("R").apply {
+            status shouldBe 1
+            request shouldBe "D"
+            lastDeliveredAt shouldBe deliveredAt
+            expiresAt shouldBe expiresAt
+            acknowledged shouldBe false
+            acknowledgedBy shouldBe null
+            acknowledgedByDevice shouldBe null
+            calledBackAt shouldBe null
+        }
+
+        pushoverClient.getEmergencyState("R1").apply {
+            status shouldBe 1
+            request shouldBe "D"
+            lastDeliveredAt shouldBe deliveredAt
+            expiresAt shouldBe expiresAt
+            acknowledged shouldBe true
+            acknowledgedBy shouldBe "user1"
+            acknowledgedByDevice shouldBe "device"
+            acknowledgedAt shouldBe deliveredAt
+            calledBackAt shouldBe null
+        }
+
+        pushoverClient.cancelEmergencyMessage("R").request shouldBe "E"
+
+        pushoverClient.cancelEmergencyMessageByTag("TAG").request shouldBe "F"
+    }
+
+    @Test
+    fun `Using metrics`(runtimeInfo: WireMockRuntimeInfo) {
+        val registry = SimpleMeterRegistry()
+
+        pushoverClient = PushoverRestClient(
+            "app-token",
+            "user-token",
+            apiHost = "http://localhost:${runtimeInfo.httpPort}",
+            registry = registry
+        )
+
+        val iterations = 10
+
+        (1..iterations).forEach { _ ->
+            pushoverClient.getSounds().apply { status shouldBe 1 }
+        }
+
+        registry.meters
+            .first { it.id.name == "http.client.request.count" }
+            .shouldNotBeNull()
+            .measure()
+            .first()
+            .value shouldBe iterations.toDouble()
+
+        println(registry.metersAsString)
+    }
+
+    private fun stubsForEmergencyMessage() {
+        stubFor(
+            post("/1/messages.json")
+                .willReturn(
+                    okJson(
+                        """
+                            {
+                                "receipt": "R",
+                                "status": 1,
+                                "request": "C"
+                            }
+                        """.trimIndent()
+                    )
+                )
+        )
+
+        stubFor(
+            get("/1/receipts/R.json?token=app-token")
+                .willReturn(
+                    okJson(
+                        """
+                        {
+                            "status": 1,
+                            "acknowledged": 0,
+                            "acknowledged_at": 0,
+                            "acknowledged_by": "",
+                            "acknowledged_by_device": "",
+                            "last_delivered_at": ${deliveredAt.toInstant(ZoneOffset.UTC).epochSecond},
+                            "expired": 1,
+                            "expires_at": ${expiresAt.toInstant(ZoneOffset.UTC).epochSecond},
+                            "called_back": 0,
+                            "called_back_at": 0,
+                            "request": "D"
+                        }
+                        """.trimIndent()
+                    )
+                )
+        )
+
+        stubFor(
+            get("/1/receipts/R1.json?token=app-token")
+                .willReturn(
+                    okJson(
+                        """
+                        {
+                            "status": 1,
+                            "acknowledged": 1,
+                            "acknowledged_at": ${deliveredAt.toInstant(ZoneOffset.UTC).epochSecond},
+                            "acknowledged_by": "user1",
+                            "acknowledged_by_device": "device",
+                            "last_delivered_at": ${deliveredAt.toInstant(ZoneOffset.UTC).epochSecond},
+                            "expired": 1,
+                            "expires_at": ${expiresAt.toInstant(ZoneOffset.UTC).epochSecond},
+                            "called_back": 0,
+                            "called_back_at": 0,
+                            "request": "D"
+                        }
+                        """.trimIndent()
+                    )
+                )
+        )
+    }
+
+    private fun LoggedRequest.partAsString(name: String): String = this.parts.first { it.name == name }.body.asString()
+
+    companion object {
+        private lateinit var pushoverClient: PushoverClient
+        private lateinit var invalidClient: PushoverClient
+
+        val deliveredAt: LocalDateTime = LocalDateTime.parse("2023-01-07T10:00:00")
+        val expiresAt: LocalDateTime = LocalDateTime.parse("2023-01-07T11:00:00")
+
+        @JvmStatic
+        @BeforeAll
+        fun beforeAll(runtimeInfo: WireMockRuntimeInfo) {
+            pushoverClient = PushoverRestClient(
+                "app-token",
+                "user-token",
+                apiHost = "http://localhost:${runtimeInfo.httpPort}",
+            )
+            invalidClient = PushoverRestClient(
+                "invalid-token",
+                "user-token",
+                apiHost = "http://localhost:${runtimeInfo.httpPort}",
+            )
+        }
+    }
+}

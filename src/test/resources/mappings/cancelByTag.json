@@ -1,0 +1,16 @@
+{
+    "request": {
+        "method": "POST",
+        "url": "/1/receipts/cancel_by_tag/TAG.json"
+    },
+    "response": {
+        "status": 200,
+        "jsonBody": {
+            "status": 1,
+            "request": "F"
+        },
+        "headers": {
+            "Content-Type": "application/json"
+        }
+    }
+}
