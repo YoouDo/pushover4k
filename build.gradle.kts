@@ -58,7 +58,7 @@ dependencies {
     implementation("org.http4k:http4k-multipart")
 
     // logging
-    implementation("io.github.microutils:kotlin-logging-jvm:3.0.4")
+    implementation("io.github.microutils:kotlin-logging-jvm:3.0.5")
 
     // metrics
     implementation("io.micrometer:micrometer-core:1.10.2")
