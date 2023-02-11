@@ -19,6 +19,8 @@ Create a client using your Pushover tokens:
 val pushoverClient : PushoverClient = PushoverRestClient(
     "your app token",
     "your user token",
+    baseRetryInterval = 100L,                // optional, default: 500L
+    backoffMultiplier = 1.5,                 // optional, default: 2.0
 )
 ```
 
