@@ -6,6 +6,7 @@ import de.kleinkop.pushover4k.client.PushoverRestClient
 import io.kotest.matchers.maps.shouldContainKey
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
+import mu.KotlinLogging
 import java.io.File
 import java.time.LocalDateTime
 import java.util.concurrent.TimeUnit
@@ -15,6 +16,8 @@ import java.util.concurrent.TimeUnit
  */
 class CallingPushover {
     companion object {
+        private val logger = KotlinLogging.logger { }
+
         @Suppress("RECEIVER_NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
         @JvmStatic
         fun main(vararg arg: String) {
@@ -27,7 +30,7 @@ class CallingPushover {
 
             // check sound magic is available
             pushoverClient.getSounds().sounds.shouldNotBeNull()
-                .onEach { (k, v) -> println("$k: $v") }
+                .onEach { (k, v) -> logger.info { "$k: $v" } }
                 .shouldContainKey("magic")
 
             waiting(1L)
@@ -50,7 +53,7 @@ class CallingPushover {
                         image = file,
                     )
                 )
-            println(pushoverResponse)
+            logger.info { pushoverResponse }
 
             waiting(2L)
 
@@ -68,25 +71,25 @@ class CallingPushover {
             )
             response.status shouldBe 1
             val receipt = response.receipt.shouldNotBeNull()
-            println("Receipt id is $receipt")
+            logger.info { "Receipt id is $receipt" }
 
             waiting(2L)
 
             // Fetch state:
             val emergencyState = pushoverClient.getEmergencyState(receipt)
-            println(emergencyState)
+            logger.info { emergencyState }
             emergencyState.status shouldBe 1
             emergencyState.expired shouldBe false
             waiting(2L)
 
             // Cancel emergency by tag
             val cancel = pushoverClient.cancelEmergencyMessageByTag("aTag")
-            println("Cancel result: $cancel")
+            logger.info { "Cancel result: $cancel" }
             cancel.status shouldBe 1
 
             pushoverClient.getEmergencyState(receipt).also {
                 it.expired shouldBe true
-                println(it)
+                logger.info { it }
             }
         }
 

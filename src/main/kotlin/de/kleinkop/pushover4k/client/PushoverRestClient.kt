@@ -1,5 +1,8 @@
 package de.kleinkop.pushover4k.client
 
+import io.github.resilience4j.core.IntervalFunction
+import io.github.resilience4j.retry.Retry
+import io.github.resilience4j.retry.RetryConfig
 import io.micrometer.core.instrument.MeterRegistry
 import org.http4k.client.ApacheClient
 import org.http4k.core.Body
@@ -10,6 +13,7 @@ import org.http4k.core.Request
 import org.http4k.core.then
 import org.http4k.filter.ClientFilters
 import org.http4k.filter.MicrometerMetrics
+import org.http4k.filter.ResilienceFilters
 import org.http4k.format.Jackson.auto
 import org.http4k.lens.MultipartFormFile
 import java.io.File
@@ -20,6 +24,8 @@ import java.time.ZoneOffset
 class PushoverRestClient(
     private val appToken: String,
     private val userToken: String? = null,
+    baseRetryInterval: Long = 500L,
+    backoffMultiplier: Double = 2.0,
     apiHost: String = "https://api.pushover.net",
     registry: MeterRegistry? = null
 ) : PushoverClient {
@@ -41,6 +47,14 @@ class PushoverRestClient(
     } else {
         ApacheClient()
     }
+
+    private val retry = Retry.of(
+        "retry-pushover",
+        RetryConfig.custom<RetryConfig>()
+            .maxAttempts(5)
+            .intervalFunction(IntervalFunction.ofExponentialBackoff(baseRetryInterval, backoffMultiplier))
+            .build()
+    )
 
     override fun sendMessage(msg: Message): PushoverResponse {
         val body = MultipartFormBody()
@@ -69,7 +83,12 @@ class PushoverRestClient(
             .header("content-type", "multipart/form-data; boundary=${body.boundary}")
             .body(body)
 
-        val response = client(request)
+        val retrying = ResilienceFilters.RetryFailures(
+            retry
+        ) { r -> !r.status.successful }
+            .then(client)
+
+        val response = retrying(request)
 
         return responseLens.extract(response)
     }
