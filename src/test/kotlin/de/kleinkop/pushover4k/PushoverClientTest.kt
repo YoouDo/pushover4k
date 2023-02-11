@@ -1,14 +1,18 @@
 package de.kleinkop.pushover4k
 
+import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.findAll
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.okJson
 import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
+import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo
+import com.github.tomakehurst.wiremock.client.WireMock.verify
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo
 import com.github.tomakehurst.wiremock.junit5.WireMockTest
+import com.github.tomakehurst.wiremock.stubbing.Scenario
 import com.github.tomakehurst.wiremock.verification.LoggedRequest
 import de.kleinkop.pushover4k.client.Message
 import de.kleinkop.pushover4k.client.Priority
@@ -19,6 +23,7 @@ import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
+import mu.KotlinLogging
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import java.io.File
@@ -185,7 +190,7 @@ class PushoverClientTest {
     fun `Using metrics`(runtimeInfo: WireMockRuntimeInfo) {
         val registry = SimpleMeterRegistry()
 
-        pushoverClient = PushoverRestClient(
+        val myPushoverClient = PushoverRestClient(
             "app-token",
             "user-token",
             apiHost = "http://localhost:${runtimeInfo.httpPort}",
@@ -195,7 +200,7 @@ class PushoverClientTest {
         val iterations = 10
 
         (1..iterations).forEach { _ ->
-            pushoverClient.getSounds().apply { status shouldBe 1 }
+            myPushoverClient.getSounds().apply { status shouldBe 1 }
         }
 
         registry.meters
@@ -205,7 +210,69 @@ class PushoverClientTest {
             .first()
             .value shouldBe iterations.toDouble()
 
-        println(registry.metersAsString)
+        logger.info { registry.metersAsString }
+    }
+
+    @Test
+    fun `Check if five retries are executed`() {
+        stubFor(
+            post("/1/messages.json")
+                .inScenario("Retry")
+                .whenScenarioStateIs(Scenario.STARTED)
+                .willReturn(
+                    aResponse().withStatus(500)
+                )
+                .willSetStateTo("STEP-1")
+        )
+
+        for (i in 1..3) {
+            stubFor(
+                post("/1/messages.json")
+                    .inScenario("Retry")
+                    .whenScenarioStateIs("STEP-$i")
+                    .willReturn(
+                        aResponse().withStatus(500)
+                    )
+                    .willSetStateTo("STEP-${i + 1}")
+            )
+        }
+
+        stubFor(
+            post("/1/messages.json")
+                .inScenario("Retry")
+                .whenScenarioStateIs("STEP-4")
+                .willReturn(
+                    okJson(
+                        """
+                            {
+                                "status": 1,
+                                "request": "B"
+                            }                            
+                        """.trimIndent()
+                    )
+                )
+        )
+
+        pushoverClient.sendMessage(
+            Message(
+                message = "Testing",
+            )
+        ).apply {
+            status shouldBe 1
+            request shouldBe "B"
+        }
+
+        findAll(postRequestedFor(urlPathEqualTo("/1/messages.json")))
+            .filter { it.isMultipart }
+            .shouldHaveSize(5)
+            .last()
+            .apply {
+                partAsString("token") shouldBe "app-token"
+                partAsString("user") shouldBe "user-token"
+                partAsString("message") shouldBe "Testing"
+            }
+
+        verify(5, postRequestedFor(urlEqualTo("/1/messages.json")))
     }
 
     private fun stubsForEmergencyMessage() {
@@ -274,6 +341,8 @@ class PushoverClientTest {
     private fun LoggedRequest.partAsString(name: String): String = this.parts.first { it.name == name }.body.asString()
 
     companion object {
+        val logger = KotlinLogging.logger { }
+
         private lateinit var pushoverClient: PushoverClient
         private lateinit var invalidClient: PushoverClient
 
@@ -286,6 +355,8 @@ class PushoverClientTest {
             pushoverClient = PushoverRestClient(
                 "app-token",
                 "user-token",
+                baseRetryInterval = 10L,
+                backoffMultiplier = 1.1,
                 apiHost = "http://localhost:${runtimeInfo.httpPort}",
             )
             invalidClient = PushoverRestClient(
