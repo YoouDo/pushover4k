@@ -17,7 +17,7 @@ import com.github.tomakehurst.wiremock.verification.LoggedRequest
 import de.kleinkop.pushover4k.client.Message
 import de.kleinkop.pushover4k.client.Priority
 import de.kleinkop.pushover4k.client.PushoverClient
-import de.kleinkop.pushover4k.client.PushoverRestClient
+import de.kleinkop.pushover4k.client.PushoverHttpClient
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.nulls.shouldNotBeNull
@@ -190,7 +190,7 @@ class PushoverClientTest {
     fun `Using metrics`(runtimeInfo: WireMockRuntimeInfo) {
         val registry = SimpleMeterRegistry()
 
-        val myPushoverClient = PushoverRestClient(
+        val myPushoverClient = PushoverHttpClient(
             "app-token",
             "user-token",
             apiHost = "http://localhost:${runtimeInfo.httpPort}",
@@ -352,14 +352,14 @@ class PushoverClientTest {
         @JvmStatic
         @BeforeAll
         fun beforeAll(runtimeInfo: WireMockRuntimeInfo) {
-            pushoverClient = PushoverRestClient(
+            pushoverClient = PushoverHttpClient(
                 "app-token",
                 "user-token",
                 baseRetryInterval = 10L,
                 backoffMultiplier = 1.1,
                 apiHost = "http://localhost:${runtimeInfo.httpPort}",
             )
-            invalidClient = PushoverRestClient(
+            invalidClient = PushoverHttpClient(
                 "invalid-token",
                 "user-token",
                 apiHost = "http://localhost:${runtimeInfo.httpPort}",

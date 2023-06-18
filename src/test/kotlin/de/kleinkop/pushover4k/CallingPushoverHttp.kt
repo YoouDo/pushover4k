@@ -2,19 +2,17 @@ package de.kleinkop.pushover4k
 
 import de.kleinkop.pushover4k.client.Message
 import de.kleinkop.pushover4k.client.Priority
-import de.kleinkop.pushover4k.client.PushoverRestClient
+import de.kleinkop.pushover4k.client.PushoverHttpClient
+import de.kleinkop.pushover4k.client.toLocalDateTimeUTC
 import io.kotest.matchers.maps.shouldContainKey
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import mu.KotlinLogging
 import java.io.File
-import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.util.concurrent.TimeUnit
 
-/**
- * Testing code against the real Pushover API
- */
-class CallingPushover {
+class CallingPushoverHttp {
     companion object {
         private val logger = KotlinLogging.logger { }
 
@@ -23,7 +21,7 @@ class CallingPushover {
         fun main(vararg arg: String) {
             val device = System.getenv("PUSHOVER_DEVICE").shouldNotBeNull()
 
-            val pushoverClient = PushoverRestClient(
+            val pushoverClient = PushoverHttpClient(
                 System.getenv("PUSHOVER_TOKEN"),
                 System.getenv("PUSHOVER_USER")
             )
@@ -36,7 +34,7 @@ class CallingPushover {
             waiting(1L)
 
             // Send message with image and sound
-            val file = File(CallingPushover::class.java.getResource("/image.png").file)
+            val file = File(CallingPushoverHttp::class.java.getResource("/image.png").file)
 
             val pushoverResponse = pushoverClient
                 .sendMessage(
@@ -49,12 +47,11 @@ class CallingPushover {
                         url = "https://www.example.com",
                         urlTitle = "This is an example URL.",
                         priority = Priority.NORMAL,
-                        timestamp = LocalDateTime.parse("2022-12-31T14:16:00"),
+                        timestamp = OffsetDateTime.parse("2023-06-18T14:00:00+02:00").toLocalDateTimeUTC(),
                         image = file,
                     )
                 )
             logger.info { pushoverResponse }
-
             waiting(2L)
 
             // send emergency message

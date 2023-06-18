@@ -8,6 +8,7 @@ buildscript {
 
 plugins {
     kotlin("jvm") version "1.7.22"
+    kotlin("plugin.serialization") version "1.7.22"
     kotlin("kapt") version "1.7.22"
     id("org.jlleitschuh.gradle.ktlint") version "11.1.0"
     idea
@@ -19,7 +20,7 @@ plugins {
 }
 
 group = "de.kleinkop"
-version = "1.1.0"
+version = "1.2.0"
 
 java {
     toolchain {
@@ -48,16 +49,9 @@ repositories {
 dependencies {
     // kotlin
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.4.1")
 
-    // http4k
-    implementation(platform("org.http4k:http4k-bom:5.2.1.0"))
-    implementation("org.http4k:http4k-core")
-    implementation("org.http4k:http4k-format-jackson")
-    implementation("org.http4k:http4k-client-apache")
-    implementation("org.http4k:http4k-metrics-micrometer")
-    implementation("org.http4k:http4k-multipart")
-    implementation("org.http4k:http4k-resilience4j")
-
+    implementation("io.github.resilience4j:resilience4j-all:2.0.2")
     // logging
     implementation("io.github.microutils:kotlin-logging-jvm:3.0.5")
 

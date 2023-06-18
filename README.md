@@ -6,12 +6,16 @@
 
 A simple library to use [Pushover](https://www.pushover.net) messages in Kotlin applications.
 
-Use following dependency in your application:
+Use the following dependency in your application:
 ```kotlin
-implementation("de.kleinkop:pushover4k:1.0.0")
+implementation("de.kleinkop:pushover4k:1.2.0")
 ```
 
-#### Examples:
+### Changes
+#### Release 1.2.0
+Http4k framework was replaced by JDK internal HttpClient to reduce dependencies.
+
+### Examples:
 
 Create a client using your Pushover tokens:
 
@@ -45,7 +49,7 @@ pushoverClient.sendMessage(
         url = "https://www.pushover.net",
         urlTitle = "Pushover",
         devices = listOf("device1", "device2"),
-        timestamp = LocalDateTime.now(),
+        timestamp = OffsetDateTime.now().toLocalDateTimeUTC(),
         html = true,
         sound = "magic",
         image = File("image.png"),
@@ -72,22 +76,22 @@ Please note that you have to provide values for `retry` and `expire`. Usings `ta
 
 All properties of `Message`:
 
-| property  | type          |      optional      | description                                                                            |
-|-----------|---------------|:------------------:|----------------------------------------------------------------------------------------|
-| message   | String        |                    | The only mandatory parameter                                                           |
-| title     | String        | :heavy_check_mark: | If not provided the Pushover default will be used                                      |
-| priority  | Priority      | :heavy_check_mark: | Priority as defined by [Pushover](https://pushover.net/api#priority)                   |
-| url       | String        | :heavy_check_mark: | Will be shown as supplementary URL in the message                                      |
-| urlTitle  | String        | :heavy_check_mark: | Supplementary URL will be shown with this title                                        |
-| devices   | List<String>  | :heavy_check_mark: | Message will be sent to these devices only                                             |
-| timestamp | LocalDateTime | :heavy_check_mark: | This time will be used as a message time                                               |
-| html      | Boolean       | :heavy_check_mark: | Use simple HTML tags in the message                                                    |
-| sound     | String        | :heavy_check_mark: | Client device will use this sound.                                                     |
-| image     | File          | :heavy_check_mark: | Image will be added to message                                                         |
-| monospace | Boolean       | :heavy_check_mark: | Message will be rendered with monospace font. Only useable in non-html messages        |
-| retry     | Int           | :heavy_check_mark: | Emergency messages will be retried with this interval in seconds. Minimum value is 30  |
-| expire    | Int           | :heavy_check_mark: | Emergency message will expire after this period in seconds                             |
-| tags      | List<String>  | :heavy_check_mark: | Tags to be added to emergency message. May be used for cancellations                   |
+| property  | type          |      optional      | description                                                                           |
+|-----------|---------------|:------------------:|---------------------------------------------------------------------------------------|
+| message   | String        |                    | The only mandatory parameter                                                          |
+| title     | String        | :heavy_check_mark: | If not provided the Pushover default will be used                                     |
+| priority  | Priority      | :heavy_check_mark: | Priority as defined by [Pushover](https://pushover.net/api#priority)                  |
+| url       | String        | :heavy_check_mark: | Will be shown as supplementary URL in the message                                     |
+| urlTitle  | String        | :heavy_check_mark: | Supplementary URL will be shown with this title                                       |
+| devices   | List<String>  | :heavy_check_mark: | Message will be sent to these devices only                                            |
+| timestamp | LocalDateTime | :heavy_check_mark: | This time in UTC will be used as a message time                                       |
+| html      | Boolean       | :heavy_check_mark: | Use simple HTML tags in the message                                                   |
+| sound     | String        | :heavy_check_mark: | Client device will use this sound.                                                    |
+| image     | File          | :heavy_check_mark: | Image will be added to message                                                        |
+| monospace | Boolean       | :heavy_check_mark: | Message will be rendered with monospace font. Only useable in non-html messages       |
+| retry     | Int           | :heavy_check_mark: | Emergency messages will be retried with this interval in seconds. Minimum value is 30 |
+| expire    | Int           | :heavy_check_mark: | Emergency message will expire after this period in seconds                            |
+| tags      | List<String>  | :heavy_check_mark: | Tags to be added to emergency message. May be used for cancellations                  |
 
 ---
 #### Emergency messages
