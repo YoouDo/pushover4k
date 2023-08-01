@@ -68,7 +68,7 @@ dependencies {
     testRuntimeOnly("org.slf4j:slf4j-simple:2.0.7")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.3")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.3")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.9.3")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.10.0")
     testImplementation("io.mockk:mockk:1.13.5")
     testImplementation("com.github.tomakehurst:wiremock-jre8:2.35.0")
 
