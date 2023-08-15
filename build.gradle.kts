@@ -10,7 +10,7 @@ plugins {
     kotlin("jvm") version "1.7.22"
     kotlin("plugin.serialization") version "1.7.22"
     kotlin("kapt") version "1.7.22"
-    id("org.jlleitschuh.gradle.ktlint") version "11.1.0"
+    id("org.jlleitschuh.gradle.ktlint") version "11.5.1"
     idea
     `java-library`
     `maven-publish`
@@ -49,7 +49,7 @@ repositories {
 dependencies {
     // kotlin
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.4.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.5.0")
 
     implementation("io.github.resilience4j:resilience4j-all:2.0.2")
     // logging
@@ -61,7 +61,7 @@ dependencies {
     // testing
     testRuntimeOnly("org.slf4j:slf4j-simple:2.0.7")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.0")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.3")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.0")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.10.0")
     testImplementation("io.mockk:mockk:1.13.5")
     testImplementation("com.github.tomakehurst:wiremock-jre8:2.35.0")

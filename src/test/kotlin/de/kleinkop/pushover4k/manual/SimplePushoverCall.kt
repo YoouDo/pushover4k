@@ -1,43 +1,29 @@
-package de.kleinkop.pushover4k
+package de.kleinkop.pushover4k.manual
 
 import de.kleinkop.pushover4k.client.Message
 import de.kleinkop.pushover4k.client.Priority
-import de.kleinkop.pushover4k.client.http.PushoverHttpClient
 import de.kleinkop.pushover4k.client.toLocalDateTimeUTC
 import io.kotest.matchers.maps.shouldContainKey
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
-import mu.KotlinLogging
-import java.io.File
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
 
 class SimplePushoverCall {
-    companion object {
-        private val logger = KotlinLogging.logger { }
-
-        @Suppress("RECEIVER_NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
+    companion object : ManualPushoverTest() {
         @JvmStatic
         fun main(vararg arg: String) {
-            val device = System.getenv("PUSHOVER_DEVICE").shouldNotBeNull()
-            val sound = System.getenv("PUSHOVER_SOUND").shouldNotBeNull()
-
-            val pushoverClient = PushoverHttpClient(
-                System.getenv("PUSHOVER_TOKEN"),
-                System.getenv("PUSHOVER_USER")
-            )
-
             // check sound magic is available
-            pushoverClient.getSounds().sounds.shouldNotBeNull()
+            pushover().getSounds().sounds.shouldNotBeNull()
                 .onEach { (k, v) -> logger.info { "$k: $v" } }
                 .shouldContainKey(sound)
 
             // Send message with image and sound
-            val file = File(SimplePushoverCall::class.java.getResource("/image.png").file)
+            val file = file("/image.png")
 
             file.exists() shouldBe true
 
-            val pushoverResponse = pushoverClient
+            val pushoverResponse = pushover()
                 .sendMessage(
                     Message(
                         "Testnachricht: äöüß \uD83E\uDD37",
@@ -50,7 +36,7 @@ class SimplePushoverCall {
                         priority = Priority.NORMAL,
                         timestamp = OffsetDateTime.now().truncatedTo(ChronoUnit.SECONDS).toLocalDateTimeUTC(),
                         image = file,
-                    )
+                    ),
                 )
             logger.info { pushoverResponse }
         }

@@ -25,7 +25,6 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldStartWith
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
-import mu.KotlinLogging
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import java.io.File
@@ -87,7 +86,7 @@ class PushoverClientTest {
             Message(
                 message = "msg",
                 html = true,
-                monospace = true
+                monospace = true,
             )
         }
     }
@@ -104,18 +103,18 @@ class PushoverClientTest {
                                 "status": 1,
                                 "request": "B"
                             }                            
-                        """.trimIndent()
+                        """.trimIndent(),
                     )
                         .withHeader("X-Limit-App-Limit", "10000")
                         .withHeader("X-Limit-App-Remaining", "1234")
-                        .withHeader("X-Limit-App-Reset", "1393653600")
-                )
+                        .withHeader("X-Limit-App-Reset", "1393653600"),
+                ),
         )
 
         pushoverClient.sendMessage(
             Message(
                 message = "Testing",
-            )
+            ),
         ).apply {
             status shouldBe 1
             request shouldBe "B"
@@ -151,7 +150,7 @@ class PushoverClientTest {
                 timestamp = LocalDateTime.now(),
                 image = File(PushoverClientTest::class.java.getResource("/image.png")!!.file),
 
-            )
+            ),
         ).apply {
             status shouldBe 1
             request shouldBe "C"
@@ -205,7 +204,7 @@ class PushoverClientTest {
             "app-token",
             "user-token",
             apiHost = "http://localhost:${runtimeInfo.httpPort}",
-            registry = registry
+            registry = registry,
         )
 
         val iterations = 10
@@ -220,8 +219,6 @@ class PushoverClientTest {
             .measure()
             .first()
             .value shouldBe iterations.toDouble()
-
-        logger.info { registry.metersAsString }
     }
 
     @Test
@@ -231,9 +228,9 @@ class PushoverClientTest {
                 .inScenario("Retry")
                 .whenScenarioStateIs(Scenario.STARTED)
                 .willReturn(
-                    aResponse().withStatus(500)
+                    aResponse().withStatus(500),
                 )
-                .willSetStateTo("STEP-1")
+                .willSetStateTo("STEP-1"),
         )
 
         for (i in 1..3) {
@@ -242,9 +239,9 @@ class PushoverClientTest {
                     .inScenario("Retry")
                     .whenScenarioStateIs("STEP-$i")
                     .willReturn(
-                        aResponse().withStatus(500)
+                        aResponse().withStatus(500),
                     )
-                    .willSetStateTo("STEP-${i + 1}")
+                    .willSetStateTo("STEP-${i + 1}"),
             )
         }
 
@@ -259,13 +256,13 @@ class PushoverClientTest {
                                 "status": 1,
                                 "request": "B"
                             }                            
-                        """.trimIndent()
-                    )
-                )
+                        """.trimIndent(),
+                    ),
+                ),
         )
 
         pushoverClient.sendMessage(
-            Message(message = "Testing")
+            Message(message = "Testing"),
         ).apply {
             status shouldBe 1
             request shouldBe "B"
@@ -290,16 +287,15 @@ class PushoverClientTest {
             post("/1/messages.json")
                 .inScenario("Retry2")
                 .willReturn(
-                    aResponse().withStatus(500)
-                )
+                    aResponse().withStatus(500),
+                ),
         )
 
         shouldThrow<RuntimeException> {
             pushoverClient.sendMessage(
-                Message(message = "Testing")
+                Message(message = "Testing"),
             )
         }.also {
-            logger.info { it }
             it.message shouldStartWith "Call to Pushover API failed"
         }
     }
@@ -315,9 +311,9 @@ class PushoverClientTest {
                                 "status": 1,
                                 "request": "C"
                             }
-                        """.trimIndent()
-                    )
-                )
+                        """.trimIndent(),
+                    ),
+                ),
         )
 
         stubFor(
@@ -338,9 +334,9 @@ class PushoverClientTest {
                             "called_back_at": 0,
                             "request": "D"
                         }
-                        """.trimIndent()
-                    )
-                )
+                        """.trimIndent(),
+                    ),
+                ),
         )
 
         stubFor(
@@ -361,17 +357,15 @@ class PushoverClientTest {
                             "called_back_at": 0,
                             "request": "D"
                         }
-                        """.trimIndent()
-                    )
-                )
+                        """.trimIndent(),
+                    ),
+                ),
         )
     }
 
     private fun LoggedRequest.partAsString(name: String): String = this.parts.first { it.name == name }.body.asString()
 
     companion object {
-        val logger = KotlinLogging.logger { }
-
         private lateinit var pushoverClient: PushoverClient
         private lateinit var invalidClient: PushoverClient
 
@@ -384,8 +378,7 @@ class PushoverClientTest {
             pushoverClient = PushoverHttpClient(
                 "app-token",
                 "user-token",
-                baseRetryInterval = 10L,
-                backoffMultiplier = 1.1,
+                retryInterval = 10L,
                 apiHost = "http://localhost:${runtimeInfo.httpPort}",
             )
             invalidClient = PushoverHttpClient(

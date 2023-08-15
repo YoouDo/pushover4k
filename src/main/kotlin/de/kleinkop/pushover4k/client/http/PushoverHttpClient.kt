@@ -29,9 +29,10 @@ import java.util.UUID
 class PushoverHttpClient(
     private val appToken: String,
     private val userToken: String? = null,
-    baseRetryInterval: Long = 500L,
-    backoffMultiplier: Double = 2.0,
     apiHost: String = "https://api.pushover.net",
+    retryAttempts: Int = RETRY_ATTEMPTS,
+    retryInterval: Long = DEFAULT_RETRY_INTERVAL,
+    httpTimeout: Long = HTTP_TIMEOUT_IN_SECONDS,
     private val registry: MeterRegistry? = null,
 ) : PushoverClient {
     private val url = "$apiHost/1/messages.json"
@@ -45,20 +46,21 @@ class PushoverHttpClient(
     private val retry = Retry.of(
         "retry-pushover",
         RetryConfig.custom<RetryConfig>()
-            .maxAttempts(5)
-            .intervalFunction(IntervalFunction.ofExponentialBackoff(baseRetryInterval, backoffMultiplier))
-            .build()
+            .maxAttempts(retryAttempts)
+            .intervalFunction(IntervalFunction.of(retryInterval))
+            .build(),
     )
 
-    private val httpClient: HttpClient = HttpClient.newHttpClient()
-
-    private val successfulStatusCodes = listOf(200, 202)
+    private val httpClient: HttpClient = HttpClient
+        .newBuilder()
+        .connectTimeout(Duration.ofSeconds(httpTimeout))
+        .build()
 
     private fun httpRequest(request: HttpRequest): HttpResponse<String> {
         val supplier: () -> HttpResponse<String> = {
             registry?.counter("http.client.request.count")?.increment()
             val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
-            if (response.statusCode() !in successfulStatusCodes) {
+            if (response.statusCode() >= 500) {
                 throw RuntimeException("Http call failed with status code ${response.statusCode()}")
             }
             response
@@ -92,7 +94,7 @@ class PushoverHttpClient(
             .plusIfSet(
                 "timestamp",
                 msg.timestamp != null,
-                msg.timestamp?.toEpochSecond(ZoneOffset.UTC)?.toString() ?: ""
+                msg.timestamp?.toEpochSecond(ZoneOffset.UTC)?.toString() ?: "",
             )
             .plusIfSet("device", msg.devices)
             .plusIfSet("retry", msg.retry.toString())
@@ -104,7 +106,7 @@ class PushoverHttpClient(
         val request = defaultRequest(url)
             .header("Content-Type", bodyData.first)
             .POST(
-                HttpRequest.BodyPublishers.ofByteArrays(bodyData.second)
+                HttpRequest.BodyPublishers.ofByteArrays(bodyData.second),
             )
             .build()
 
@@ -136,8 +138,8 @@ class PushoverHttpClient(
         val request = defaultRequest(cancelUrl.replace("{RECEIPT_ID}", receiptId))
             .POST(
                 HttpRequest.BodyPublishers.ofString(
-                    BodyToken(appToken).toString()
-                )
+                    BodyToken(appToken).toString(),
+                ),
             )
             .build()
 
@@ -151,19 +153,30 @@ class PushoverHttpClient(
             .version(HttpClient.Version.HTTP_2)
             .POST(
                 HttpRequest.BodyPublishers.ofString(
-                    BodyToken(appToken).toString()
-                )
+                    BodyToken(appToken).toString(),
+                ),
             )
             .build()
 
         val response = httpRequest(request)
         return json.decodeFromString<RawPushoverResponse>(response.body()).toDomain(response.headers())
     }
+
+    companion object {
+        // default value for number of retries
+        private const val RETRY_ATTEMPTS = 5
+
+        // Minimum retry interval allowed by Pushover
+        private const val DEFAULT_RETRY_INTERVAL = 5000L
+
+        // Time-out for http client
+        private const val HTTP_TIMEOUT_IN_SECONDS = 30L
+    }
 }
 
 @Serializable
 data class BodyToken(
-    val token: String
+    val token: String,
 ) {
     override fun toString(): String = "token=$token"
 }
@@ -195,7 +208,7 @@ data class RawReceiptResponse(
             acknowledgedByDevice = acknowledged_by_device.nullable(),
             expired = expired == 1,
             calledBack = called_back == 1,
-            calledBackAt = called_back_at.toLocalDateTimeOrNull()
+            calledBackAt = called_back_at.toLocalDateTimeOrNull(),
         )
 }
 
@@ -215,7 +228,7 @@ data class RawPushoverResponse(
         errors,
         receipt,
         canceled,
-        extractAppliationUsage(headers)
+        extractAppliationUsage(headers),
     )
 
     private fun extractAppliationUsage(headers: HttpHeaders): ApplicationUsage? {
@@ -235,7 +248,7 @@ data class RawPushoverResponse(
             ApplicationUsage(
                 validatedParams[0].toInt(),
                 validatedParams[1].toInt(),
-                validatedParams[2].toLong().toLocalDateTimeUTC()
+                validatedParams[2].toLong().toLocalDateTimeUTC(),
             )
         } else {
             null
@@ -252,6 +265,10 @@ data class RawSoundResponse(
     val token: String? = null,
 ) {
     fun toDomain(): SoundResponse = SoundResponse(
-        status, request, sounds, errors, token
+        status,
+        request,
+        sounds,
+        errors,
+        token,
     )
 }

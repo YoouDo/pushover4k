@@ -15,16 +15,21 @@ implementation("de.kleinkop:pushover4k:1.2.0")
 #### Release 1.2.0
 Http4k framework was replaced by JDK internal HttpClient to reduce dependencies.
 
+The method `PushoverClient.sendMessage()` will now provide the details of used Pushover application if available.
+
 ### Examples:
 
 Create a client using your Pushover tokens:
 
 ```kotlin
-val pushoverClient : PushoverClient = PushoverRestClient(
-    "your app token",
-    "your user token",
-    baseRetryInterval = 100L,                // optional, default: 500L
-    backoffMultiplier = 1.5,                 // optional, default: 2.0
+val pushoverClient : PushoverClient = PushoverHttpClient(
+    appToken = "your app token",
+    userToken = "your user token",
+    apiHost = "Host of Pushover api",        // default: https://api.pushover.net
+    retryAttempts = 3,                       // number of retries, default: 5
+    retryInterval = 6000L,                   // retry interval in millis, default: 5000L
+    httpTimeout = 20L,                       // http connect timeout in seconds, default: 30L
+    registry = SimpleMeterRegistry()         // optional Micrometer registry
 )
 ```
 
@@ -38,7 +43,7 @@ pushoverClient.sendMessage(
 )
 ```
 
-Send a message using all available options: 
+Send a message using all available options excluding those for emergency messages: 
 
 ```kotlin
 pushoverClient.sendMessage(
@@ -64,9 +69,9 @@ pushoverClient.sendMessage(
     Message(
         message = "Testing emergency",
         priority = Priority.EMERGENCY,
-        retry = 100,
-        expire = 200,
-        tags = listOf("TAG")
+        retry = 60,                                    // required: number of retries from Pushover server
+        expire = 3600,                                 // required: time to live of emergency message
+        tags = listOf("tag1", "tag2")                  // optional: tags for emergency message
     )
 )
 ```
@@ -93,6 +98,22 @@ All properties of `Message`:
 | expire    | Int           | :heavy_check_mark: | Emergency message will expire after this period in seconds                            |
 | tags      | List<String>  | :heavy_check_mark: | Tags to be added to emergency message. May be used for cancellations                  |
 
+
+#### Response object
+Sending a message will return information provided by Pushover using following data class:
+
+```kotlin
+data class PushoverResponse(
+    val status: Int,
+    val request: String,
+    val user: String? = null,
+    val errors: List<String>? = null,
+    val receipt: String? = null,
+    val canceled: Int? = null,
+    val applicationUsage: ApplicationUsage?,
+)
+```
+ 
 ---
 #### Emergency messages
 

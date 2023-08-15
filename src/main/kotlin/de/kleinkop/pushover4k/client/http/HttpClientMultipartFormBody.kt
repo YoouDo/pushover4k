@@ -60,8 +60,8 @@ class HttpClientMultipartFormBody {
                     val mimeType = Files.probeContentType(path)
                     byteArrays.add(
                         "\"${entry.key}\"; filename=\"${path.fileName}\"\r\nContent-Type: $mimeType\r\n\r\n".toByteArray(
-                            StandardCharsets.UTF_8
-                        )
+                            StandardCharsets.UTF_8,
+                        ),
                     )
                     byteArrays.add(Files.readAllBytes(path))
                     byteArrays.add("\r\n".toByteArray(StandardCharsets.UTF_8))

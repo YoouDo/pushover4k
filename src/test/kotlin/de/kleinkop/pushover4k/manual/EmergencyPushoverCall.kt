@@ -1,28 +1,17 @@
-package de.kleinkop.pushover4k
+package de.kleinkop.pushover4k.manual
 
 import de.kleinkop.pushover4k.client.Message
 import de.kleinkop.pushover4k.client.Priority
-import de.kleinkop.pushover4k.client.http.PushoverHttpClient
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
-import mu.KotlinLogging
-import java.util.concurrent.TimeUnit
 
-class CancelEmergencyByTag {
-    companion object {
-        private val logger = KotlinLogging.logger { }
+class EmergencyPushoverCall {
+    companion object : ManualPushoverTest() {
 
         @JvmStatic
         fun main(vararg arg: String) {
-            val device = System.getenv("PUSHOVER_DEVICE").shouldNotBeNull()
-
-            val pushoverClient = PushoverHttpClient(
-                System.getenv("PUSHOVER_TOKEN"),
-                System.getenv("PUSHOVER_USER")
-            )
-
             // send emergency message
-            val response = pushoverClient.sendMessage(
+            val response = pushover().sendMessage(
                 Message(
                     message = "This is just a test. Don't care.",
                     title = "Test ony",
@@ -31,7 +20,7 @@ class CancelEmergencyByTag {
                     tags = listOf("aTag", "testing", "ignore"),
                     retry = 30,
                     expire = 120,
-                )
+                ),
             )
             response.status shouldBe 1
             val receipt = response.receipt.shouldNotBeNull()
@@ -40,31 +29,23 @@ class CancelEmergencyByTag {
             waiting(6L)
 
             // Fetch state:
-            val emergencyState = pushoverClient.getEmergencyState(receipt)
+            val emergencyState = pushover().getEmergencyState(receipt)
             logger.info { "Emergency state is $emergencyState" }
             emergencyState.status shouldBe 1
             emergencyState.expired shouldBe false
             waiting(6L)
 
-            // Cancel emergency by tag
-            val tag = "aTag"
-            logger.info { "Try to cancel emergency by tag $tag " }
-            val cancel = pushoverClient.cancelEmergencyMessageByTag(tag)
+            // Cancel emergency by receipt id
+            logger.info { "Try to cancel emergency by receipt $receipt " }
+            val cancel = pushover().cancelEmergencyMessage(receipt)
             logger.info { "Cancel result: $cancel" }
             cancel.status shouldBe 1
-            cancel.canceled.shouldNotBeNull() shouldBe 1
 
             waiting(7L)
-            pushoverClient.getEmergencyState(receipt).also {
+            pushover().getEmergencyState(receipt).also {
                 it.expired shouldBe true
                 logger.info { it }
             }
-        }
-
-        private fun waiting(timeInSeconds: Long) {
-            logger.info { "Waiting $timeInSeconds seconds..." }
-            TimeUnit.SECONDS.sleep(timeInSeconds)
-            logger.info { "... done!" }
         }
     }
 }
