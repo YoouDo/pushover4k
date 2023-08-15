@@ -2,21 +2,16 @@ package de.kleinkop.pushover4k
 
 import de.kleinkop.pushover4k.client.Message
 import de.kleinkop.pushover4k.client.Priority
-import de.kleinkop.pushover4k.client.PushoverHttpClient
-import de.kleinkop.pushover4k.client.toLocalDateTimeUTC
-import io.kotest.matchers.maps.shouldContainKey
+import de.kleinkop.pushover4k.client.http.PushoverHttpClient
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import mu.KotlinLogging
-import java.io.File
-import java.time.OffsetDateTime
 import java.util.concurrent.TimeUnit
 
-class CallingPushoverHttp {
+class CancelEmergencyByTag {
     companion object {
         private val logger = KotlinLogging.logger { }
 
-        @Suppress("RECEIVER_NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
         @JvmStatic
         fun main(vararg arg: String) {
             val device = System.getenv("PUSHOVER_DEVICE").shouldNotBeNull()
@@ -25,34 +20,6 @@ class CallingPushoverHttp {
                 System.getenv("PUSHOVER_TOKEN"),
                 System.getenv("PUSHOVER_USER")
             )
-
-            // check sound magic is available
-            pushoverClient.getSounds().sounds.shouldNotBeNull()
-                .onEach { (k, v) -> logger.info { "$k: $v" } }
-                .shouldContainKey("magic")
-
-            waiting(1L)
-
-            // Send message with image and sound
-            val file = File(CallingPushoverHttp::class.java.getResource("/image.png").file)
-
-            val pushoverResponse = pushoverClient
-                .sendMessage(
-                    Message(
-                        "Testnachricht: äöüß",
-                        devices = listOf(device),
-                        title = "A title (äöüß)",
-                        html = true,
-                        sound = "magic",
-                        url = "https://www.example.com",
-                        urlTitle = "This is an example URL.",
-                        priority = Priority.NORMAL,
-                        timestamp = OffsetDateTime.parse("2023-06-18T14:00:00+02:00").toLocalDateTimeUTC(),
-                        image = file,
-                    )
-                )
-            logger.info { pushoverResponse }
-            waiting(2L)
 
             // send emergency message
             val response = pushoverClient.sendMessage(
@@ -70,26 +37,34 @@ class CallingPushoverHttp {
             val receipt = response.receipt.shouldNotBeNull()
             logger.info { "Receipt id is $receipt" }
 
-            waiting(2L)
+            waiting(6L)
 
             // Fetch state:
             val emergencyState = pushoverClient.getEmergencyState(receipt)
-            logger.info { emergencyState }
+            logger.info { "Emergency state is $emergencyState" }
             emergencyState.status shouldBe 1
             emergencyState.expired shouldBe false
-            waiting(2L)
+            waiting(6L)
 
             // Cancel emergency by tag
-            val cancel = pushoverClient.cancelEmergencyMessageByTag("aTag")
+            val tag = "aTag"
+            logger.info { "Try to cancel emergency by tag $tag " }
+            val cancel = pushoverClient.cancelEmergencyMessageByTag(tag)
             logger.info { "Cancel result: $cancel" }
             cancel.status shouldBe 1
+            cancel.canceled.shouldNotBeNull() shouldBe 1
 
+            waiting(7L)
             pushoverClient.getEmergencyState(receipt).also {
                 it.expired shouldBe true
                 logger.info { it }
             }
         }
 
-        private fun waiting(timeInSeconds: Long) = TimeUnit.SECONDS.sleep(timeInSeconds)
+        private fun waiting(timeInSeconds: Long) {
+            logger.info { "Waiting $timeInSeconds seconds..." }
+            TimeUnit.SECONDS.sleep(timeInSeconds)
+            logger.info { "... done!" }
+        }
     }
 }

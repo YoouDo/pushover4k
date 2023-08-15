@@ -1,20 +1,27 @@
-package de.kleinkop.pushover4k.client
+package de.kleinkop.pushover4k.client.http
 
+import de.kleinkop.pushover4k.client.ApplicationUsage
+import de.kleinkop.pushover4k.client.Message
+import de.kleinkop.pushover4k.client.PushoverClient
+import de.kleinkop.pushover4k.client.PushoverResponse
+import de.kleinkop.pushover4k.client.ReceiptResponse
+import de.kleinkop.pushover4k.client.SoundResponse
+import de.kleinkop.pushover4k.client.nullable
+import de.kleinkop.pushover4k.client.toLocalDateTimeOrNull
+import de.kleinkop.pushover4k.client.toLocalDateTimeUTC
 import io.github.resilience4j.core.IntervalFunction
 import io.github.resilience4j.decorators.Decorators
 import io.github.resilience4j.retry.Retry
 import io.github.resilience4j.retry.RetryConfig
 import io.micrometer.core.instrument.MeterRegistry
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
-import java.io.File
 import java.net.URI
 import java.net.http.HttpClient
+import java.net.http.HttpHeaders
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
-import java.nio.charset.StandardCharsets
-import java.nio.file.Files
-import java.nio.file.Path
 import java.time.Duration
 import java.time.ZoneOffset
 import java.util.UUID
@@ -32,6 +39,8 @@ class PushoverHttpClient(
     private val receiptUrl = "$apiHost/1/receipts/"
     private val cancelUrl = "$apiHost/1/receipts/{RECEIPT_ID}/cancel.json"
     private val cancelByTagUrl = "$apiHost/1/receipts/cancel_by_tag"
+
+    private val json = Json { ignoreUnknownKeys = true }
 
     private val retry = Retry.of(
         "retry-pushover",
@@ -56,6 +65,9 @@ class PushoverHttpClient(
         }
         return Decorators.ofSupplier(supplier)
             .withRetry(retry)
+            .withFallback { throwable: Throwable ->
+                throw RuntimeException("Call to Pushover API failed", throwable)
+            }
             .decorate()
             .get()
     }
@@ -97,7 +109,9 @@ class PushoverHttpClient(
             .build()
 
         val response = httpRequest(request)
-        return Json.decodeFromString<PushoverResponse>(response.body())
+        return json
+            .decodeFromString<RawPushoverResponse>(response.body())
+            .toDomain(response.headers())
     }
 
     override fun getSounds(): SoundResponse {
@@ -106,7 +120,7 @@ class PushoverHttpClient(
             .build()
 
         val response = httpRequest(request)
-        return Json.decodeFromString<SoundResponse>(response.body())
+        return json.decodeFromString<RawSoundResponse>(response.body()).toDomain()
     }
 
     override fun getEmergencyState(receiptId: String): ReceiptResponse {
@@ -115,20 +129,20 @@ class PushoverHttpClient(
             .build()
 
         val response = httpRequest(request)
-        return Json.decodeFromString<RawReceiptResponse>(response.body()).toDomain()
+        return json.decodeFromString<RawReceiptResponse>(response.body()).toDomain()
     }
 
     override fun cancelEmergencyMessage(receiptId: String): PushoverResponse {
         val request = defaultRequest(cancelUrl.replace("{RECEIPT_ID}", receiptId))
             .POST(
                 HttpRequest.BodyPublishers.ofString(
-                    "{token: \"$appToken\"}"
+                    BodyToken(appToken).toString()
                 )
             )
             .build()
 
         val response = httpRequest(request)
-        return Json.decodeFromString<PushoverResponse>(response.body())
+        return json.decodeFromString<RawPushoverResponse>(response.body()).toDomain(response.headers())
     }
 
     override fun cancelEmergencyMessageByTag(tag: String): PushoverResponse {
@@ -137,82 +151,107 @@ class PushoverHttpClient(
             .version(HttpClient.Version.HTTP_2)
             .POST(
                 HttpRequest.BodyPublishers.ofString(
-                    "{token: \"$appToken\"}"
+                    BodyToken(appToken).toString()
                 )
             )
             .build()
 
         val response = httpRequest(request)
-        return Json.decodeFromString<PushoverResponse>(response.body())
+        return json.decodeFromString<RawPushoverResponse>(response.body()).toDomain(response.headers())
     }
 }
 
-/**
- * Create multipart form-data based on a publication on "Ralph's Blog"
- */
-class HttpClientMultipartFormBody {
-    private val content: MutableMap<String, Any> = mutableMapOf()
+@Serializable
+data class BodyToken(
+    val token: String
+) {
+    override fun toString(): String = "token=$token"
+}
 
-    fun plus(name: String, value: String): HttpClientMultipartFormBody {
-        content[name] = value
-        return this
-    }
+@Suppress("PropertyName")
+@Serializable
+data class RawReceiptResponse(
+    val status: Int,
+    val request: String,
+    val last_delivered_at: Long,
+    val expires_at: Long,
+    val acknowledged: Int,
+    val acknowledged_at: Long,
+    val acknowledged_by: String,
+    val acknowledged_by_device: String,
+    val expired: Int,
+    val called_back: Int,
+    val called_back_at: Long,
+) {
+    fun toDomain(): ReceiptResponse =
+        ReceiptResponse(
+            status,
+            request,
+            lastDeliveredAt = last_delivered_at.toLocalDateTimeUTC(),
+            expiresAt = expires_at.toLocalDateTimeUTC(),
+            acknowledged = acknowledged == 1,
+            acknowledgedAt = acknowledged_at.toLocalDateTimeOrNull(),
+            acknowledgedBy = acknowledged_by.nullable(),
+            acknowledgedByDevice = acknowledged_by_device.nullable(),
+            expired = expired == 1,
+            calledBack = called_back == 1,
+            calledBackAt = called_back_at.toLocalDateTimeOrNull()
+        )
+}
 
-    fun plusIfSet(name: String, isSet: Boolean, value: String): HttpClientMultipartFormBody =
-        if (isSet) {
-            plus(name, value)
-        } else {
-            this
-        }
+@Serializable
+data class RawPushoverResponse(
+    val status: Int,
+    val request: String,
+    val user: String? = null,
+    val errors: List<String>? = null,
+    val receipt: String? = null,
+    val canceled: Int? = null,
+) {
+    fun toDomain(headers: HttpHeaders): PushoverResponse = PushoverResponse(
+        status,
+        request,
+        user,
+        errors,
+        receipt,
+        canceled,
+        extractAppliationUsage(headers)
+    )
 
-    fun plusIfSet(name: String, value: String?): HttpClientMultipartFormBody =
-        value
-            ?.let { this.plus(name, it) }
-            ?: this
-
-    fun plusIfSet(name: String, values: List<String>): HttpClientMultipartFormBody =
-        if (values.isNotEmpty()) {
-            plus(name, values.joinToString(separator = ","))
-        } else {
-            this
-        }
-
-    fun plusImageIfSet(name: String, file: File?): HttpClientMultipartFormBody {
-        file?.also {
-            content[name] = it
-        }
-        return this
-    }
-
-    /**
-     * Build multipart content
-     * @return Pair of value of header "Content-Type" and lists of ByteArrays
-     */
-    fun build(boundary: String): Pair<String, List<ByteArray>> {
-        val byteArrays = ArrayList<ByteArray>()
-        val separator = "--$boundary\r\nContent-Disposition: form-data; name=".toByteArray(StandardCharsets.UTF_8)
-
-        val data: Map<String, Any> = content.toMap()
-        for (entry in data.entries) {
-            byteArrays.add(separator)
-            when (entry.value) {
-                is File -> {
-                    val file = entry.value as File
-                    val path = Path.of(file.toURI())
-                    val mimeType = Files.probeContentType(path)
-                    byteArrays.add(
-                        "\"${entry.key}\"; filename=\"${path.fileName}\"\r\nContent-Type: $mimeType\r\n\r\n".toByteArray(
-                            StandardCharsets.UTF_8
-                        )
-                    )
-                    byteArrays.add(Files.readAllBytes(path))
-                    byteArrays.add("\r\n".toByteArray(StandardCharsets.UTF_8))
+    private fun extractAppliationUsage(headers: HttpHeaders): ApplicationUsage? {
+        val validatedParams = mutableListOf(
+            "X-Limit-App-Limit",
+            "X-Limit-App-Remaining",
+            "X-Limit-App-Reset",
+        ).mapNotNull { headers.firstValue(it).orElse(null) }
+            .mapIndexedNotNull { idx, value ->
+                when (idx) {
+                    in 0..1 -> value.toLongOrNull()?.toString()
+                    else -> value
                 }
-
-                else -> byteArrays.add("\"${entry.key}\"\r\n\r\n${entry.value}\r\n".toByteArray(StandardCharsets.UTF_8))
             }
+
+        return if (validatedParams.size == 3) {
+            ApplicationUsage(
+                validatedParams[0].toInt(),
+                validatedParams[1].toInt(),
+                validatedParams[2].toLong().toLocalDateTimeUTC()
+            )
+        } else {
+            null
         }
-        byteArrays.add("--$boundary--".toByteArray(StandardCharsets.UTF_8))
-        return "multipart/form-data;boundary=$boundary" to byteArrays
     }
+}
+
+@Serializable
+data class RawSoundResponse(
+    val status: Int,
+    val request: String,
+    val sounds: Map<String, String>? = null,
+    val errors: List<String>? = null,
+    val token: String? = null,
+) {
+    fun toDomain(): SoundResponse = SoundResponse(
+        status, request, sounds, errors, token
+    )
 }

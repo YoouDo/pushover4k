@@ -17,11 +17,13 @@ import com.github.tomakehurst.wiremock.verification.LoggedRequest
 import de.kleinkop.pushover4k.client.Message
 import de.kleinkop.pushover4k.client.Priority
 import de.kleinkop.pushover4k.client.PushoverClient
-import de.kleinkop.pushover4k.client.PushoverHttpClient
+import de.kleinkop.pushover4k.client.http.PushoverHttpClient
+import de.kleinkop.pushover4k.client.toLocalDateTimeUTC
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldStartWith
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import mu.KotlinLogging
 import org.junit.jupiter.api.BeforeAll
@@ -90,6 +92,7 @@ class PushoverClientTest {
         }
     }
 
+    @Suppress("UastIncorrectHttpHeaderInspection")
     @Test
     fun `Send a simple message`() {
         stubFor(
@@ -103,6 +106,9 @@ class PushoverClientTest {
                             }                            
                         """.trimIndent()
                     )
+                        .withHeader("X-Limit-App-Limit", "10000")
+                        .withHeader("X-Limit-App-Remaining", "1234")
+                        .withHeader("X-Limit-App-Reset", "1393653600")
                 )
         )
 
@@ -113,6 +119,11 @@ class PushoverClientTest {
         ).apply {
             status shouldBe 1
             request shouldBe "B"
+            applicationUsage.shouldNotBeNull().also {
+                it.limit shouldBe 10_000
+                it.remaining shouldBe 1234
+                it.reset shouldBe 1393653600L.toLocalDateTimeUTC()
+            }
         }
 
         findAll(postRequestedFor(urlPathEqualTo("/1/messages.json")))
@@ -254,9 +265,7 @@ class PushoverClientTest {
         )
 
         pushoverClient.sendMessage(
-            Message(
-                message = "Testing",
-            )
+            Message(message = "Testing")
         ).apply {
             status shouldBe 1
             request shouldBe "B"
@@ -273,6 +282,26 @@ class PushoverClientTest {
             }
 
         verify(5, postRequestedFor(urlEqualTo("/1/messages.json")))
+    }
+
+    @Test
+    fun `Check exception is thrown after five retries`() {
+        stubFor(
+            post("/1/messages.json")
+                .inScenario("Retry2")
+                .willReturn(
+                    aResponse().withStatus(500)
+                )
+        )
+
+        shouldThrow<RuntimeException> {
+            pushoverClient.sendMessage(
+                Message(message = "Testing")
+            )
+        }.also {
+            logger.info { it }
+            it.message shouldStartWith "Call to Pushover API failed"
+        }
     }
 
     private fun stubsForEmergencyMessage() {
