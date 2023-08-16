@@ -8,8 +8,9 @@ buildscript {
 
 plugins {
     kotlin("jvm") version "1.7.22"
+    kotlin("plugin.serialization") version "1.7.22"
     kotlin("kapt") version "1.7.22"
-    id("org.jlleitschuh.gradle.ktlint") version "11.1.0"
+    id("org.jlleitschuh.gradle.ktlint") version "11.5.1"
     idea
     `java-library`
     `maven-publish`
@@ -19,7 +20,7 @@ plugins {
 }
 
 group = "de.kleinkop"
-version = "1.1.0"
+version = "1.2.0"
 
 java {
     toolchain {
@@ -48,16 +49,9 @@ repositories {
 dependencies {
     // kotlin
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.5.0")
 
-    // http4k
-    implementation(platform("org.http4k:http4k-bom:5.2.1.0"))
-    implementation("org.http4k:http4k-core")
-    implementation("org.http4k:http4k-format-jackson")
-    implementation("org.http4k:http4k-client-apache")
-    implementation("org.http4k:http4k-metrics-micrometer")
-    implementation("org.http4k:http4k-multipart")
-    implementation("org.http4k:http4k-resilience4j")
-
+    implementation("io.github.resilience4j:resilience4j-all:2.1.0")
     // logging
     implementation("io.github.microutils:kotlin-logging-jvm:3.0.5")
 
@@ -67,7 +61,7 @@ dependencies {
     // testing
     testRuntimeOnly("org.slf4j:slf4j-simple:2.0.7")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.0")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.3")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.0")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.10.0")
     testImplementation("io.mockk:mockk:1.13.5")
     testImplementation("com.github.tomakehurst:wiremock-jre8:2.35.0")

@@ -265,7 +265,10 @@ ij_java_wrap_first_method_in_call_chain = false
 ij_java_wrap_long_lines = false
 
 [{*.kt, *.kts}]
-disabled_rules = import-ordering
+ktlint_code_style=intellij_idea
+ktlint_disabled_rules = import-ordering
+ij_kotlin_allow_trailing_comma = true
+ij_kotlin_allow_trailing_comma_on_call_site = true
 ij_continuation_indent_size = 4
 ij_kotlin_align_in_columns_case_branch = false
 ij_kotlin_align_multiline_binary_operation = false

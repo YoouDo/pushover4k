@@ -31,20 +31,12 @@ data class Message(
     }
 }
 
-data class PushoverResponse(
-    val status: Int,
-    val request: String,
-    val user: String? = null,
-    val errors: List<String>? = null,
-    val receipt: String? = null,
-)
-
 data class SoundResponse(
     val status: Int,
     val request: String,
-    val sounds: Map<String, String>?,
-    val errors: List<String>?,
-    val token: String?
+    val sounds: Map<String, String>? = null,
+    val errors: List<String>? = null,
+    val token: String? = null,
 )
 
 data class ReceiptResponse(
@@ -61,6 +53,12 @@ data class ReceiptResponse(
     val calledBackAt: LocalDateTime? = null,
 )
 
+data class ApplicationUsage(
+    val limit: Int,
+    val remaining: Int,
+    val reset: LocalDateTime,
+)
+
 @Suppress("unused")
 enum class Priority(val value: Int) {
     LOWEST(-2),
@@ -69,3 +67,13 @@ enum class Priority(val value: Int) {
     HIGH(1),
     EMERGENCY(2),
 }
+
+data class PushoverResponse(
+    val status: Int,
+    val request: String,
+    val user: String? = null,
+    val errors: List<String>? = null,
+    val receipt: String? = null,
+    val canceled: Int? = null,
+    val applicationUsage: ApplicationUsage? = null,
+)

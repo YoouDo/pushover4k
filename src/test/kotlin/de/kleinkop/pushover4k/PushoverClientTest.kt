@@ -17,13 +17,14 @@ import com.github.tomakehurst.wiremock.verification.LoggedRequest
 import de.kleinkop.pushover4k.client.Message
 import de.kleinkop.pushover4k.client.Priority
 import de.kleinkop.pushover4k.client.PushoverClient
-import de.kleinkop.pushover4k.client.PushoverRestClient
+import de.kleinkop.pushover4k.client.http.PushoverHttpClient
+import de.kleinkop.pushover4k.client.toLocalDateTimeUTC
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldStartWith
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
-import mu.KotlinLogging
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import java.io.File
@@ -85,11 +86,12 @@ class PushoverClientTest {
             Message(
                 message = "msg",
                 html = true,
-                monospace = true
+                monospace = true,
             )
         }
     }
 
+    @Suppress("UastIncorrectHttpHeaderInspection")
     @Test
     fun `Send a simple message`() {
         stubFor(
@@ -101,18 +103,26 @@ class PushoverClientTest {
                                 "status": 1,
                                 "request": "B"
                             }                            
-                        """.trimIndent()
+                        """.trimIndent(),
                     )
-                )
+                        .withHeader("X-Limit-App-Limit", "10000")
+                        .withHeader("X-Limit-App-Remaining", "1234")
+                        .withHeader("X-Limit-App-Reset", "1393653600"),
+                ),
         )
 
         pushoverClient.sendMessage(
             Message(
                 message = "Testing",
-            )
+            ),
         ).apply {
             status shouldBe 1
             request shouldBe "B"
+            applicationUsage.shouldNotBeNull().also {
+                it.limit shouldBe 10_000
+                it.remaining shouldBe 1234
+                it.reset shouldBe 1393653600L.toLocalDateTimeUTC()
+            }
         }
 
         findAll(postRequestedFor(urlPathEqualTo("/1/messages.json")))
@@ -140,7 +150,7 @@ class PushoverClientTest {
                 timestamp = LocalDateTime.now(),
                 image = File(PushoverClientTest::class.java.getResource("/image.png")!!.file),
 
-            )
+            ),
         ).apply {
             status shouldBe 1
             request shouldBe "C"
@@ -190,11 +200,11 @@ class PushoverClientTest {
     fun `Using metrics`(runtimeInfo: WireMockRuntimeInfo) {
         val registry = SimpleMeterRegistry()
 
-        val myPushoverClient = PushoverRestClient(
+        val myPushoverClient = PushoverHttpClient(
             "app-token",
             "user-token",
             apiHost = "http://localhost:${runtimeInfo.httpPort}",
-            registry = registry
+            registry = registry,
         )
 
         val iterations = 10
@@ -209,8 +219,6 @@ class PushoverClientTest {
             .measure()
             .first()
             .value shouldBe iterations.toDouble()
-
-        logger.info { registry.metersAsString }
     }
 
     @Test
@@ -220,9 +228,9 @@ class PushoverClientTest {
                 .inScenario("Retry")
                 .whenScenarioStateIs(Scenario.STARTED)
                 .willReturn(
-                    aResponse().withStatus(500)
+                    aResponse().withStatus(500),
                 )
-                .willSetStateTo("STEP-1")
+                .willSetStateTo("STEP-1"),
         )
 
         for (i in 1..3) {
@@ -231,9 +239,9 @@ class PushoverClientTest {
                     .inScenario("Retry")
                     .whenScenarioStateIs("STEP-$i")
                     .willReturn(
-                        aResponse().withStatus(500)
+                        aResponse().withStatus(500),
                     )
-                    .willSetStateTo("STEP-${i + 1}")
+                    .willSetStateTo("STEP-${i + 1}"),
             )
         }
 
@@ -248,15 +256,13 @@ class PushoverClientTest {
                                 "status": 1,
                                 "request": "B"
                             }                            
-                        """.trimIndent()
-                    )
-                )
+                        """.trimIndent(),
+                    ),
+                ),
         )
 
         pushoverClient.sendMessage(
-            Message(
-                message = "Testing",
-            )
+            Message(message = "Testing"),
         ).apply {
             status shouldBe 1
             request shouldBe "B"
@@ -275,6 +281,25 @@ class PushoverClientTest {
         verify(5, postRequestedFor(urlEqualTo("/1/messages.json")))
     }
 
+    @Test
+    fun `Check exception is thrown after five retries`() {
+        stubFor(
+            post("/1/messages.json")
+                .inScenario("Retry2")
+                .willReturn(
+                    aResponse().withStatus(500),
+                ),
+        )
+
+        shouldThrow<RuntimeException> {
+            pushoverClient.sendMessage(
+                Message(message = "Testing"),
+            )
+        }.also {
+            it.message shouldStartWith "Call to Pushover API failed"
+        }
+    }
+
     private fun stubsForEmergencyMessage() {
         stubFor(
             post("/1/messages.json")
@@ -286,9 +311,9 @@ class PushoverClientTest {
                                 "status": 1,
                                 "request": "C"
                             }
-                        """.trimIndent()
-                    )
-                )
+                        """.trimIndent(),
+                    ),
+                ),
         )
 
         stubFor(
@@ -309,9 +334,9 @@ class PushoverClientTest {
                             "called_back_at": 0,
                             "request": "D"
                         }
-                        """.trimIndent()
-                    )
-                )
+                        """.trimIndent(),
+                    ),
+                ),
         )
 
         stubFor(
@@ -332,17 +357,15 @@ class PushoverClientTest {
                             "called_back_at": 0,
                             "request": "D"
                         }
-                        """.trimIndent()
-                    )
-                )
+                        """.trimIndent(),
+                    ),
+                ),
         )
     }
 
     private fun LoggedRequest.partAsString(name: String): String = this.parts.first { it.name == name }.body.asString()
 
     companion object {
-        val logger = KotlinLogging.logger { }
-
         private lateinit var pushoverClient: PushoverClient
         private lateinit var invalidClient: PushoverClient
 
@@ -352,14 +375,13 @@ class PushoverClientTest {
         @JvmStatic
         @BeforeAll
         fun beforeAll(runtimeInfo: WireMockRuntimeInfo) {
-            pushoverClient = PushoverRestClient(
+            pushoverClient = PushoverHttpClient(
                 "app-token",
                 "user-token",
-                baseRetryInterval = 10L,
-                backoffMultiplier = 1.1,
+                retryInterval = 10L,
                 apiHost = "http://localhost:${runtimeInfo.httpPort}",
             )
-            invalidClient = PushoverRestClient(
+            invalidClient = PushoverHttpClient(
                 "invalid-token",
                 "user-token",
                 apiHost = "http://localhost:${runtimeInfo.httpPort}",
