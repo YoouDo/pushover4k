@@ -51,7 +51,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.5.0")
 
-    implementation("io.github.resilience4j:resilience4j-all:2.0.2")
+    implementation("io.github.resilience4j:resilience4j-all:2.1.0")
     // logging
     implementation("io.github.microutils:kotlin-logging-jvm:3.0.5")
 

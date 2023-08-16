@@ -75,5 +75,5 @@ data class PushoverResponse(
     val errors: List<String>? = null,
     val receipt: String? = null,
     val canceled: Int? = null,
-    val applicationUsage: ApplicationUsage?,
+    val applicationUsage: ApplicationUsage? = null,
 )
