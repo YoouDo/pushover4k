@@ -131,6 +131,7 @@ class PushoverHttpClient(
             .build()
 
         val response = httpRequest(request)
+        println(response.body())
         return json.decodeFromString<RawReceiptResponse>(response.body()).toDomain()
     }
 

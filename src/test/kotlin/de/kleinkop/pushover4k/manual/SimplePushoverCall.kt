@@ -2,7 +2,7 @@ package de.kleinkop.pushover4k.manual
 
 import de.kleinkop.pushover4k.client.Message
 import de.kleinkop.pushover4k.client.Priority
-import de.kleinkop.pushover4k.client.toLocalDateTimeUTC
+import de.kleinkop.pushover4k.client.toLocalDateTimeInUTC
 import io.kotest.matchers.maps.shouldContainKey
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
@@ -34,7 +34,7 @@ class SimplePushoverCall {
                         url = "https://www.example.com",
                         urlTitle = "This is an example URL.",
                         priority = Priority.NORMAL,
-                        timestamp = OffsetDateTime.now().truncatedTo(ChronoUnit.SECONDS).toLocalDateTimeUTC(),
+                        timestamp = OffsetDateTime.now().truncatedTo(ChronoUnit.SECONDS).toLocalDateTimeInUTC(),
                         image = file,
                     ),
                 )

@@ -17,7 +17,7 @@ fun Long.toLocalDateTimeOrNull(): LocalDateTime? = when (this) {
     else -> this.toLocalDateTimeUTC()
 }
 
-fun OffsetDateTime.toLocalDateTimeUTC(): LocalDateTime =
+fun OffsetDateTime.toLocalDateTimeInUTC(): LocalDateTime =
     this
         .atZoneSameInstant(ZoneId.of("UTC"))
         .toLocalDateTime()

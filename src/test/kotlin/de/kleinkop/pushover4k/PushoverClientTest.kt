@@ -380,10 +380,11 @@ class PushoverClientTest {
                 "user-token",
                 retryInterval = 10L,
                 apiHost = "http://localhost:${runtimeInfo.httpPort}",
+                registry = SimpleMeterRegistry(),
             )
             invalidClient = PushoverHttpClient(
                 "invalid-token",
-                "user-token",
+                null,
                 apiHost = "http://localhost:${runtimeInfo.httpPort}",
             )
         }
