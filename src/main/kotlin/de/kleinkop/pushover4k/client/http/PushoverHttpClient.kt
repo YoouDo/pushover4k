@@ -101,6 +101,7 @@ class PushoverHttpClient(
             .plusIfSet("expire", msg.expire.toString())
             .plusIfSet("tags", msg.tags)
             .plusImageIfSet("attachment", msg.image)
+            .plusIfSet("ttl", msg.ttl.toString())
             .build(UUID.randomUUID().toString())
 
         val request = defaultRequest(url)
