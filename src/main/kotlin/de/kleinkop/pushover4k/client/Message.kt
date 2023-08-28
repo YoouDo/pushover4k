@@ -18,6 +18,7 @@ data class Message(
     val retry: Int? = null,
     val expire: Int? = null,
     val tags: List<String> = emptyList(),
+    val ttl: Int? = null,
 ) {
     init {
         if (priority == Priority.EMERGENCY) {

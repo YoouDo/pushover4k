@@ -98,10 +98,11 @@ class PushoverHttpClient(
                 msg.timestamp?.toEpochSecond(ZoneOffset.UTC)?.toString() ?: "",
             )
             .plusIfSet("device", msg.devices)
-            .plusIfSet("retry", msg.retry.toString())
-            .plusIfSet("expire", msg.expire.toString())
+            .plusIfSet("retry", msg.retry)
+            .plusIfSet("expire", msg.expire)
             .plusIfSet("tags", msg.tags)
             .plusImageIfSet("attachment", msg.image)
+            .plusIfSet("ttl", msg.ttl)
             .build(UUID.randomUUID().toString())
 
         val request = defaultRequest(url)
