@@ -81,15 +81,15 @@ class PushoverHttpClientTest {
             {
                "status": 1,
                 "request": "${rawReceiptMessage.request}",
-                "last_delivered_at": ${rawReceiptMessage.last_delivered_at},
-                "expires_at": ${rawReceiptMessage.expires_at},
+                "last_delivered_at": ${rawReceiptMessage.lastDeliveredAt},
+                "expires_at": ${rawReceiptMessage.expiresAt},
                 "acknowledged": ${rawReceiptMessage.acknowledged},
-                "acknowledged_at": ${rawReceiptMessage.acknowledged_at},
-                "acknowledged_by": "${rawReceiptMessage.acknowledged_by}",
-                "acknowledged_by_device": "${rawReceiptMessage.acknowledged_by_device}",
+                "acknowledged_at": ${rawReceiptMessage.acknowledgedAt},
+                "acknowledged_by": "${rawReceiptMessage.acknowledgedBy}",
+                "acknowledged_by_device": "${rawReceiptMessage.acknowledgedByDevice}",
                 "expired": ${rawReceiptMessage.expired},
-                "called_back": ${rawReceiptMessage.called_back},
-                "called_back_at": ${rawReceiptMessage.called_back_at}               
+                "called_back": ${rawReceiptMessage.calledBack},
+                "called_back_at": ${rawReceiptMessage.calledBackAt}               
             }
         """.trimIndent().replace(Regex("[\\n ]"), "")
 

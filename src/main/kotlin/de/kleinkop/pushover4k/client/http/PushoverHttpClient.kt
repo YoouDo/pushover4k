@@ -14,6 +14,7 @@ import io.github.resilience4j.decorators.Decorators
 import io.github.resilience4j.retry.Retry
 import io.github.resilience4j.retry.RetryConfig
 import io.micrometer.core.instrument.MeterRegistry
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
@@ -182,34 +183,33 @@ data class BodyToken(
     override fun toString(): String = "token=$token"
 }
 
-@Suppress("PropertyName")
 @Serializable
 data class RawReceiptResponse(
     val status: Int,
     val request: String,
-    val last_delivered_at: Long,
-    val expires_at: Long,
+    @SerialName("last_delivered_at") val lastDeliveredAt: Long,
+    @SerialName("expires_at") val expiresAt: Long,
     val acknowledged: Int,
-    val acknowledged_at: Long,
-    val acknowledged_by: String,
-    val acknowledged_by_device: String,
+    @SerialName("acknowledged_at") val acknowledgedAt: Long,
+    @SerialName("acknowledged_by") val acknowledgedBy: String,
+    @SerialName("acknowledged_by_device") val acknowledgedByDevice: String,
     val expired: Int,
-    val called_back: Int,
-    val called_back_at: Long,
+    @SerialName("called_back") val calledBack: Int,
+    @SerialName("called_back_at") val calledBackAt: Long,
 ) {
     fun toDomain(): ReceiptResponse =
         ReceiptResponse(
             status,
             request,
-            lastDeliveredAt = last_delivered_at.toLocalDateTimeUTC(),
-            expiresAt = expires_at.toLocalDateTimeUTC(),
+            lastDeliveredAt = lastDeliveredAt.toLocalDateTimeUTC(),
+            expiresAt = expiresAt.toLocalDateTimeUTC(),
             acknowledged = acknowledged == 1,
-            acknowledgedAt = acknowledged_at.toLocalDateTimeOrNull(),
-            acknowledgedBy = acknowledged_by.nullable(),
-            acknowledgedByDevice = acknowledged_by_device.nullable(),
+            acknowledgedAt = acknowledgedAt.toLocalDateTimeOrNull(),
+            acknowledgedBy = acknowledgedBy.nullable(),
+            acknowledgedByDevice = acknowledgedByDevice.nullable(),
             expired = expired == 1,
-            calledBack = called_back == 1,
-            calledBackAt = called_back_at.toLocalDateTimeOrNull(),
+            calledBack = calledBack == 1,
+            calledBackAt = calledBackAt.toLocalDateTimeOrNull(),
         )
 }
 
