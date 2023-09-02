@@ -56,7 +56,7 @@ dependencies {
     implementation("io.github.microutils:kotlin-logging-jvm:3.0.5")
 
     // metrics
-    implementation("io.micrometer:micrometer-core:1.11.2")
+    implementation("io.micrometer:micrometer-core:1.11.3")
 
     // testing
     testRuntimeOnly("org.slf4j:slf4j-simple:2.0.7")
