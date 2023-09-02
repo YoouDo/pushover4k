@@ -8,7 +8,7 @@ buildscript {
 
 plugins {
     kotlin("jvm") version "1.7.22"
-    kotlin("plugin.serialization") version "1.9.10"
+    kotlin("plugin.serialization") version "1.7.22"
     kotlin("kapt") version "1.7.22"
     id("org.jlleitschuh.gradle.ktlint") version "11.5.1"
     idea
@@ -16,7 +16,7 @@ plugins {
     `maven-publish`
     signing
     jacoco
-    id("org.sonarqube") version "4.3.1.3277"
+    id("org.sonarqube") version "4.3.0.3225"
 }
 
 group = "de.kleinkop"
@@ -34,8 +34,8 @@ java {
 idea {
     module {
         inheritOutputDirs = false
-        outputDir = file("$buildDir/classes/kotlin/main")
-        testOutputDir = file("$buildDir/classes/kotlin/test")
+        outputDir = file("${layout.buildDirectory}buildDir/classes/kotlin/main")
+        testOutputDir = file("${layout.buildDirectory}/classes/kotlin/test")
         isDownloadSources = true
         isDownloadJavadoc = true
     }
