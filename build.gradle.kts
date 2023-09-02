@@ -16,7 +16,7 @@ plugins {
     `maven-publish`
     signing
     jacoco
-    id("org.sonarqube") version "4.3.1.3277"
+    id("org.sonarqube") version "4.3.0.3225"
 }
 
 group = "de.kleinkop"
