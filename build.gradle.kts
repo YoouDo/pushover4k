@@ -46,12 +46,16 @@ repositories {
     mavenLocal()
 }
 
+val junitVersion: String by project
+val kotlinxSerialization: String by project
+val resilience4jVersion: String by project
+
 dependencies {
     // kotlin
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.5.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:$kotlinxSerialization")
 
-    implementation("io.github.resilience4j:resilience4j-all:2.1.0")
+    implementation("io.github.resilience4j:resilience4j-all:$resilience4jVersion")
     // logging
     implementation("io.github.microutils:kotlin-logging-jvm:3.0.5")
 
@@ -60,8 +64,8 @@ dependencies {
 
     // testing
     testRuntimeOnly("org.slf4j:slf4j-simple:2.0.7")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.0")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.0")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.10.0")
     testImplementation("io.mockk:mockk:1.13.7")
     testImplementation("com.github.tomakehurst:wiremock-jre8:3.0.1")
