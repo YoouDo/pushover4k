@@ -63,14 +63,14 @@ dependencies {
     implementation("io.micrometer:micrometer-core:1.11.5")
 
     // testing
-    testRuntimeOnly("org.slf4j:slf4j-simple:2.0.7")
+    testRuntimeOnly("org.slf4j:slf4j-simple:2.0.9")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.10.0")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.10.1")
     testImplementation("io.mockk:mockk:1.13.7")
     testImplementation("com.github.tomakehurst:wiremock-jre8:3.0.1")
 
-    testImplementation("io.kotest:kotest-assertions-core-jvm:5.7.2")
+    testImplementation("io.kotest:kotest-assertions-core-jvm:5.8.0")
 }
 
 tasks.withType<Test> {
