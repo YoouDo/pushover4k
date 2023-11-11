@@ -13,3 +13,14 @@ updates:
       all-dependencies:
         patterns:
           - "*"
+        exclude-patterns:
+          - "org.jetbrains.kotlin*"
+          - "jvm"
+          - "kapt"
+          - "plugin.serialization"
+      kotlin:
+        patterns:
+          - "org.jetbrains.kotlin*"
+          - "jvm"
+          - "kapt"
+          - "plugin.serialization"
