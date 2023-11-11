@@ -70,7 +70,7 @@ dependencies {
     testImplementation("io.mockk:mockk:1.13.7")
     testImplementation("com.github.tomakehurst:wiremock-jre8:3.0.1")
 
-    testImplementation("io.kotest:kotest-assertions-core-jvm:5.6.2")
+    testImplementation("io.kotest:kotest-assertions-core-jvm:5.7.2")
 }
 
 tasks.withType<Test> {
