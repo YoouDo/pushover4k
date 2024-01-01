@@ -10,7 +10,7 @@ plugins {
     kotlin("jvm") version "1.7.22"
     kotlin("plugin.serialization") version "1.7.22"
     kotlin("kapt") version "1.7.22"
-    id("org.jlleitschuh.gradle.ktlint") version "11.5.1"
+    id("org.jlleitschuh.gradle.ktlint") version "12.0.3"
     idea
     `java-library`
     `maven-publish`
@@ -60,10 +60,10 @@ dependencies {
     implementation("io.github.microutils:kotlin-logging-jvm:3.0.5")
 
     // metrics
-    implementation("io.micrometer:micrometer-core:1.12.0")
+    implementation("io.micrometer:micrometer-core:1.12.1")
 
     // testing
-    testRuntimeOnly("org.slf4j:slf4j-simple:2.0.9")
+    testRuntimeOnly("org.slf4j:slf4j-simple:2.0.10")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.10.1")
