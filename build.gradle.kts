@@ -10,7 +10,7 @@ plugins {
     kotlin("jvm") version "1.7.22"
     kotlin("plugin.serialization") version "1.7.22"
     kotlin("kapt") version "1.7.22"
-    id("org.jlleitschuh.gradle.ktlint") version "12.0.3"
+    id("org.jlleitschuh.gradle.ktlint") version "12.1.0"
     idea
     `java-library`
     `maven-publish`
@@ -60,14 +60,14 @@ dependencies {
     implementation("io.github.microutils:kotlin-logging-jvm:3.0.5")
 
     // metrics
-    implementation("io.micrometer:micrometer-core:1.12.1")
+    implementation("io.micrometer:micrometer-core:1.12.3")
 
     // testing
-    testRuntimeOnly("org.slf4j:slf4j-simple:2.0.10")
+    testRuntimeOnly("org.slf4j:slf4j-simple:2.0.12")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.10.1")
-    testImplementation("io.mockk:mockk:1.13.7")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.10.2")
+    testImplementation("io.mockk:mockk:1.13.10")
     testImplementation("com.github.tomakehurst:wiremock-jre8:3.0.1")
 
     testImplementation("io.kotest:kotest-assertions-core-jvm:5.8.0")
