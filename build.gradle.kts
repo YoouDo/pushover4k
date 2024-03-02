@@ -7,9 +7,9 @@ buildscript {
 }
 
 plugins {
-    kotlin("jvm") version "1.7.22"
-    kotlin("plugin.serialization") version "1.7.22"
-    kotlin("kapt") version "1.7.22"
+    kotlin("jvm") version "1.8.22"
+    kotlin("plugin.serialization") version "1.8.22"
+    kotlin("kapt") version "1.8.22"
     id("org.jlleitschuh.gradle.ktlint") version "12.1.0"
     idea
     `java-library`
@@ -63,7 +63,7 @@ dependencies {
     implementation("io.micrometer:micrometer-core:1.12.3")
 
     // testing
-    testRuntimeOnly("org.slf4j:slf4j-simple:2.0.12")
+    //testRuntimeOnly("org.slf4j:slf4j-simple:2.0.12")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.10.2")
