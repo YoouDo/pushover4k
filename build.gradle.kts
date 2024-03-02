@@ -63,7 +63,6 @@ dependencies {
     implementation("io.micrometer:micrometer-core:1.12.3")
 
     // testing
-    //testRuntimeOnly("org.slf4j:slf4j-simple:2.0.12")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.10.2")
