@@ -16,7 +16,7 @@ plugins {
     `maven-publish`
     signing
     jacoco
-    id("org.sonarqube") version "4.4.1.3373"
+    id("org.sonarqube") version "5.0.0.4638"
 }
 
 group = "de.kleinkop"
@@ -60,7 +60,7 @@ dependencies {
     implementation("io.github.microutils:kotlin-logging-jvm:3.0.5")
 
     // metrics
-    implementation("io.micrometer:micrometer-core:1.12.3")
+    implementation("io.micrometer:micrometer-core:1.12.4")
 
     // testing
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
@@ -69,7 +69,7 @@ dependencies {
     testImplementation("io.mockk:mockk:1.13.10")
     testImplementation("com.github.tomakehurst:wiremock-jre8:3.0.1")
 
-    testImplementation("io.kotest:kotest-assertions-core-jvm:5.8.0")
+    testImplementation("io.kotest:kotest-assertions-core-jvm:5.8.1")
 }
 
 tasks.withType<Test> {
