@@ -35,6 +35,7 @@ class PushoverHttpClient(
     retryInterval: Long = DEFAULT_RETRY_INTERVAL,
     httpTimeout: Long = HTTP_TIMEOUT_IN_SECONDS,
     private val registry: MeterRegistry? = null,
+    customHttpClient: HttpClient? = null,
 ) : PushoverClient {
     private val url = "$apiHost/1/messages.json"
     private val soundsUrl = "$apiHost/1/sounds.json"
@@ -52,7 +53,7 @@ class PushoverHttpClient(
             .build(),
     )
 
-    private val httpClient: HttpClient = HttpClient
+    private val httpClient: HttpClient = customHttpClient ?: HttpClient
         .newBuilder()
         .connectTimeout(Duration.ofSeconds(httpTimeout))
         .build()
