@@ -33,7 +33,7 @@ class PushoverHttpClient(
     apiHost: String = "https://api.pushover.net",
     retryAttempts: Int = RETRY_ATTEMPTS,
     retryInterval: Long = DEFAULT_RETRY_INTERVAL,
-    httpTimeout: Long = HTTP_TIMEOUT_IN_SECONDS,
+    private val httpTimeout: Long = HTTP_TIMEOUT_IN_SECONDS,
     private val registry: MeterRegistry? = null,
 ) : PushoverClient {
     private val url = "$apiHost/1/messages.json"
@@ -54,7 +54,7 @@ class PushoverHttpClient(
 
     private val httpClient: HttpClient = HttpClient
         .newBuilder()
-        .connectTimeout(Duration.ofSeconds(httpTimeout))
+        .connectTimeout(Duration.ofSeconds(HTTP_TIMEOUT_IN_SECONDS))
         .build()
 
     private fun httpRequest(request: HttpRequest): HttpResponse<String> {
@@ -77,7 +77,7 @@ class PushoverHttpClient(
 
     private fun defaultRequest(url: String): HttpRequest.Builder = HttpRequest.newBuilder()
         .uri(URI(url))
-        .timeout(Duration.ofSeconds(15))
+        .timeout(Duration.ofSeconds(httpTimeout))
         .version(HttpClient.Version.HTTP_1_1)
 
     override fun sendMessage(msg: Message): PushoverResponse {
@@ -132,7 +132,6 @@ class PushoverHttpClient(
             .build()
 
         val response = httpRequest(request)
-        println(response.body())
         return json.decodeFromString<RawReceiptResponse>(response.body()).toDomain()
     }
 
