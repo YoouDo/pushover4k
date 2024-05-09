@@ -28,6 +28,12 @@ class HttpClientMultipartFormBody {
             ?.let { this.plus(name, it) }
             ?: this
 
+    fun plusIfSet(name: String, value: Number?): HttpClientMultipartFormBody {
+        return value
+            ?.let { this.plus(name, it.toString()) }
+            ?: this
+    }
+
     fun plusIfSet(name: String, values: List<String>): HttpClientMultipartFormBody =
         if (values.isNotEmpty()) {
             plus(name, values.joinToString(separator = ","))

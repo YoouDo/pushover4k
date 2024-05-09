@@ -97,6 +97,7 @@ All properties of `Message`:
 | retry     | Int           | :heavy_check_mark: | Emergency messages will be retried with this interval in seconds. Minimum value is 30 |
 | expire    | Int           | :heavy_check_mark: | Emergency message will expire after this period in seconds                            |
 | tags      | List<String>  | :heavy_check_mark: | Tags to be added to emergency message. May be used for cancellations                  |
+| ttl       | Int           | :heavy_check_mark: | Number of seconds that the message will live, before being deleted automatically      |
 
 
 #### Response object

@@ -35,6 +35,7 @@ class PushoverHttpClient(
     retryInterval: Long = DEFAULT_RETRY_INTERVAL,
     private val httpTimeout: Long = HTTP_TIMEOUT_IN_SECONDS,
     private val registry: MeterRegistry? = null,
+    customHttpClient: HttpClient? = null,
 ) : PushoverClient {
     private val url = "$apiHost/1/messages.json"
     private val soundsUrl = "$apiHost/1/sounds.json"
@@ -52,7 +53,7 @@ class PushoverHttpClient(
             .build(),
     )
 
-    private val httpClient: HttpClient = HttpClient
+    private val httpClient: HttpClient = customHttpClient ?: HttpClient
         .newBuilder()
         .connectTimeout(Duration.ofSeconds(HTTP_TIMEOUT_IN_SECONDS))
         .build()
@@ -98,10 +99,11 @@ class PushoverHttpClient(
                 msg.timestamp?.toEpochSecond(ZoneOffset.UTC)?.toString() ?: "",
             )
             .plusIfSet("device", msg.devices)
-            .plusIfSet("retry", msg.retry.toString())
-            .plusIfSet("expire", msg.expire.toString())
+            .plusIfSet("retry", msg.retry)
+            .plusIfSet("expire", msg.expire)
             .plusIfSet("tags", msg.tags)
             .plusImageIfSet("attachment", msg.image)
+            .plusIfSet("ttl", msg.ttl)
             .build(UUID.randomUUID().toString())
 
         val request = defaultRequest(url)
