@@ -60,7 +60,7 @@ dependencies {
     implementation("io.github.microutils:kotlin-logging-jvm:3.0.5")
 
     // metrics
-    implementation("io.micrometer:micrometer-core:1.12.4")
+    implementation("io.micrometer:micrometer-core:1.12.5")
 
     // testing
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
