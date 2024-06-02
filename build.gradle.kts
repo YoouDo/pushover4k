@@ -7,9 +7,9 @@ buildscript {
 }
 
 plugins {
-    kotlin("jvm") version "1.8.22"
-    kotlin("plugin.serialization") version "1.8.22"
-    kotlin("kapt") version "1.8.22"
+    kotlin("jvm") version "1.9.24"
+    kotlin("plugin.serialization") version "1.9.24"
+    kotlin("kapt") version "1.9.24"
     id("org.jlleitschuh.gradle.ktlint") version "12.1.1"
     idea
     `java-library`
