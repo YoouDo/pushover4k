@@ -34,8 +34,8 @@ java {
 idea {
     module {
         inheritOutputDirs = false
-        outputDir = file("${layout.buildDirectory}buildDir/classes/kotlin/main")
-        testOutputDir = file("${layout.buildDirectory}/classes/kotlin/test")
+        outputDir = layout.buildDirectory.dir("classes/kotlin/main").get().asFile
+        testOutputDir = layout.buildDirectory.dir("classes/kotlin/test").get().asFile
         isDownloadSources = true
         isDownloadJavadoc = true
     }
