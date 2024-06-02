@@ -8,7 +8,7 @@ buildscript {
 
 plugins {
     kotlin("jvm") version "1.9.24"
-    kotlin("plugin.serialization") version "2.0.0"
+    kotlin("plugin.serialization") version "1.9.24"
     kotlin("kapt") version "1.9.24"
     id("org.jlleitschuh.gradle.ktlint") version "12.1.1"
     idea
