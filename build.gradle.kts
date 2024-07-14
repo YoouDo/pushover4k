@@ -60,16 +60,16 @@ dependencies {
     implementation("io.github.microutils:kotlin-logging-jvm:3.0.5")
 
     // metrics
-    implementation("io.micrometer:micrometer-core:1.13.0")
+    implementation("io.micrometer:micrometer-core:1.13.1")
 
     // testing
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.10.2")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.10.3")
     testImplementation("io.mockk:mockk:1.13.11")
     testImplementation("com.github.tomakehurst:wiremock-jre8:3.0.1")
 
-    testImplementation("io.kotest:kotest-assertions-core-jvm:5.9.0")
+    testImplementation("io.kotest:kotest-assertions-core-jvm:5.9.1")
 }
 
 tasks.withType<Test> {
