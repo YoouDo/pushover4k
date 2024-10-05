@@ -60,12 +60,12 @@ dependencies {
     implementation("io.github.microutils:kotlin-logging-jvm:3.0.5")
 
     // metrics
-    implementation("io.micrometer:micrometer-core:1.13.3")
+    implementation("io.micrometer:micrometer-core:1.13.4")
 
     // testing
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.11.0")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.11.1")
     testImplementation("io.mockk:mockk:1.13.12")
     testImplementation("com.github.tomakehurst:wiremock-jre8:3.0.1")
 
