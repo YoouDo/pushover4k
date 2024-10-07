@@ -29,6 +29,7 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import java.io.File
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
 @WireMockTest
@@ -147,7 +148,7 @@ class PushoverClientTest {
                 retry = 100,
                 expire = 200,
                 tags = listOf("TAG"),
-                timestamp = LocalDateTime.now(),
+                timestamp = OffsetDateTime.now(),
                 image = File(PushoverClientTest::class.java.getResource("/image.png")!!.file),
 
             ),

@@ -24,7 +24,7 @@ import java.net.http.HttpHeaders
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.time.Duration
-import java.time.ZoneOffset
+import java.time.ZoneId
 import java.util.UUID
 
 class PushoverHttpClient(
@@ -96,7 +96,7 @@ class PushoverHttpClient(
             .plusIfSet(
                 "timestamp",
                 msg.timestamp != null,
-                msg.timestamp?.toEpochSecond(ZoneOffset.UTC)?.toString() ?: "",
+                msg.timestamp?.atZoneSameInstant(ZoneId.of("UTC"))?.toEpochSecond()?.toString() ?: "",
             )
             .plusIfSet("device", msg.devices)
             .plusIfSet("retry", msg.retry)
