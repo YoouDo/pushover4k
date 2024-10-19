@@ -81,23 +81,23 @@ Please note that you have to provide values for `retry` and `expire`. Usings `ta
 
 All properties of `Message`:
 
-| property  | type          |      optional      | description                                                                           |
-|-----------|---------------|:------------------:|---------------------------------------------------------------------------------------|
-| message   | String        |                    | The only mandatory parameter                                                          |
-| title     | String        | :heavy_check_mark: | If not provided the Pushover default will be used                                     |
-| priority  | Priority      | :heavy_check_mark: | Priority as defined by [Pushover](https://pushover.net/api#priority)                  |
-| url       | String        | :heavy_check_mark: | Will be shown as supplementary URL in the message                                     |
-| urlTitle  | String        | :heavy_check_mark: | Supplementary URL will be shown with this title                                       |
-| devices   | List<String>  | :heavy_check_mark: | Message will be sent to these devices only                                            |
-| timestamp | LocalDateTime | :heavy_check_mark: | This time in UTC will be used as a message time                                       |
-| html      | Boolean       | :heavy_check_mark: | Use simple HTML tags in the message                                                   |
-| sound     | String        | :heavy_check_mark: | Client device will use this sound.                                                    |
-| image     | File          | :heavy_check_mark: | Image will be added to message                                                        |
-| monospace | Boolean       | :heavy_check_mark: | Message will be rendered with monospace font. Only useable in non-html messages       |
-| retry     | Int           | :heavy_check_mark: | Emergency messages will be retried with this interval in seconds. Minimum value is 30 |
-| expire    | Int           | :heavy_check_mark: | Emergency message will expire after this period in seconds                            |
-| tags      | List<String>  | :heavy_check_mark: | Tags to be added to emergency message. May be used for cancellations                  |
-| ttl       | Int           | :heavy_check_mark: | Number of seconds that the message will live, before being deleted automatically      |
+| property  | type           |      optional      | description                                                                           |
+|-----------|----------------|:------------------:|---------------------------------------------------------------------------------------|
+| message   | String         |                    | The only mandatory parameter                                                          |
+| title     | String         | :heavy_check_mark: | If not provided the Pushover default will be used                                     |
+| priority  | Priority       | :heavy_check_mark: | Priority as defined by [Pushover](https://pushover.net/api#priority)                  |
+| url       | String         | :heavy_check_mark: | Will be shown as supplementary URL in the message                                     |
+| urlTitle  | String         | :heavy_check_mark: | Supplementary URL will be shown with this title                                       |
+| devices   | List<String>   | :heavy_check_mark: | Message will be sent to these devices only                                            |
+| timestamp | OffsetDateTime | :heavy_check_mark: | This time will be used as a message time                                              |
+| html      | Boolean        | :heavy_check_mark: | Use simple HTML tags in the message                                                   |
+| sound     | String         | :heavy_check_mark: | Client device will use this sound.                                                    |
+| image     | File           | :heavy_check_mark: | Image will be added to message                                                        |
+| monospace | Boolean        | :heavy_check_mark: | Message will be rendered with monospace font. Only useable in non-html messages       |
+| retry     | Int            | :heavy_check_mark: | Emergency messages will be retried with this interval in seconds. Minimum value is 30 |
+| expire    | Int            | :heavy_check_mark: | Emergency message will expire after this period in seconds                            |
+| tags      | List<String>   | :heavy_check_mark: | Tags to be added to emergency message. May be used for cancellations                  |
+| ttl       | Int            | :heavy_check_mark: | Number of seconds that the message will live, before being deleted automatically      |
 
 
 #### Response object
