@@ -2,6 +2,7 @@ package de.kleinkop.pushover4k.client
 
 import java.io.File
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
 
 data class Message(
     val message: String,
@@ -10,7 +11,7 @@ data class Message(
     val url: String? = null,
     val urlTitle: String? = null,
     val devices: List<String> = emptyList(),
-    val timestamp: LocalDateTime? = null,
+    val timestamp: OffsetDateTime? = null,
     val html: Boolean = true,
     val sound: String? = null,
     val image: File? = null,
