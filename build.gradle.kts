@@ -7,16 +7,16 @@ buildscript {
 }
 
 plugins {
-    kotlin("jvm") version "1.9.25"
-    kotlin("plugin.serialization") version "1.9.24"
-    kotlin("kapt") version "1.9.25"
-    id("org.jlleitschuh.gradle.ktlint") version "12.1.1"
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.kotlin.kapt)
+    alias(libs.plugins.ktlint)
     idea
     `java-library`
     `maven-publish`
     signing
     jacoco
-    id("org.sonarqube") version "5.1.0.4882"
+    alias(libs.plugins.sonarqube)
 }
 
 group = "de.kleinkop"
@@ -47,29 +47,29 @@ repositories {
 }
 
 val junitVersion: String by project
-val kotlinxSerialization: String by project
-val resilience4jVersion: String by project
 
 dependencies {
     // kotlin
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:$kotlinxSerialization")
+    implementation(libs.kotlin.stdlib)
+    implementation(libs.kotlinx.serialization)
 
-    implementation("io.github.resilience4j:resilience4j-all:$resilience4jVersion")
+    implementation(libs.resilience4j)
+
     // logging
-    implementation("io.github.microutils:kotlin-logging-jvm:3.0.5")
+    implementation(libs.kotlin.logging)
 
     // metrics
-    implementation("io.micrometer:micrometer-core:1.13.6")
+    implementation(libs.micrometer)
 
     // testing
-    testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.11.3")
-    testImplementation("io.mockk:mockk:1.13.13")
-    testImplementation("com.github.tomakehurst:wiremock-jre8:3.0.1")
 
-    testImplementation("io.kotest:kotest-assertions-core-jvm:5.9.1")
+    testImplementation(libs.junit.api)
+    testRuntimeOnly(libs.bundles.junit.runtime)
+
+    testImplementation(libs.mockk)
+    testImplementation(libs.wiremock)
+
+    testImplementation(libs.kotest.assertions)
 }
 
 tasks.withType<Test> {
