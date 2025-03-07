@@ -2,12 +2,12 @@
 kotlin = "2.1.0"
 kotlinxSerialization = "1.7.3"
 resilience4jVersion = "2.3.0"
-junit = "5.11.4"
-micrometer = "1.14.3"
+junit = "5.12.0"
+micrometer = "1.14.4"
 
 [plugins]
 sonarqube = { id = "org.sonarqube", version = "6.0.1.5171" }
-ktlint = { id = "org.jlleitschuh.gradle.ktlint", version = "12.1.2" }
+ktlint = { id = "org.jlleitschuh.gradle.ktlint", version = "12.2.0" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
@@ -21,9 +21,9 @@ micrometer = { module = "io.micrometer:micrometer-core", version.ref = "micromet
 
 junit-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit" }
 junit-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit" }
-junit-launcher = { module = "org.junit.platform:junit-platform-launcher", version = "1.11.4" }
+junit-launcher = { module = "org.junit.platform:junit-platform-launcher", version = "1.12.0" }
 
-mockk = { module = "io.mockk:mockk", version = "1.13.16" }
+mockk = { module = "io.mockk:mockk", version = "1.13.17" }
 wiremock = { module = "com.github.tomakehurst:wiremock-jre8", version = "3.0.1" }
 
 kotest-assertions = { module = "io.kotest:kotest-assertions-core-jvm", version = "5.9.1" }
