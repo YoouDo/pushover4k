@@ -2,8 +2,8 @@
 kotlin = "2.1.20"
 kotlinxSerialization = "1.8.1"
 resilience4jVersion = "2.3.0"
-junit = "5.12.1"
-micrometer = "1.14.5"
+junit = "5.12.2"
+micrometer = "1.14.6"
 
 [plugins]
 sonarqube = { id = "org.sonarqube", version = "6.1.0.5360" }
@@ -21,9 +21,9 @@ micrometer = { module = "io.micrometer:micrometer-core", version.ref = "micromet
 
 junit-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit" }
 junit-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit" }
-junit-launcher = { module = "org.junit.platform:junit-platform-launcher", version = "1.12.1" }
+junit-launcher = { module = "org.junit.platform:junit-platform-launcher", version = "1.12.2" }
 
-mockk = { module = "io.mockk:mockk", version = "1.13.17" }
+mockk = { module = "io.mockk:mockk", version = "1.14.2" }
 wiremock = { module = "com.github.tomakehurst:wiremock-jre8", version = "3.0.1" }
 
 kotest-assertions = { module = "io.kotest:kotest-assertions-core-jvm", version = "5.9.1" }
