@@ -60,14 +60,12 @@ dependencies {
     implementation(libs.micrometer)
 
     // testing
-
     testImplementation(libs.junit.api)
-    testRuntimeOnly(libs.bundles.junit.runtime)
-
     testImplementation(libs.mockk)
     testImplementation(libs.wiremock)
-
     testImplementation(libs.kotest.assertions)
+
+    testRuntimeOnly(libs.bundles.junit.runtime)
 }
 
 tasks.withType<Test> {

@@ -9,7 +9,7 @@ import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
 
 class SimplePushoverCall {
-    companion object : ManualPushoverTest() {
+    companion object : ManualPushoverCall() {
         @JvmStatic
         fun main(vararg arg: String) {
             // check sound magic is available

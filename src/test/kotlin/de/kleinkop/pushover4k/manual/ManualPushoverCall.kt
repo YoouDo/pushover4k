@@ -7,7 +7,7 @@ import mu.KotlinLogging
 import java.io.File
 import java.util.concurrent.TimeUnit
 
-open class ManualPushoverTest {
+open class ManualPushoverCall {
     val logger = KotlinLogging.logger { }
 
     val device = System.getenv("PUSHOVER_DEVICE").shouldNotBeNull()
@@ -29,7 +29,7 @@ open class ManualPushoverTest {
 
     fun logResponse(msg: Message) = logger.info { pushover().sendMessage(msg) }
 
-    fun file(filename: String): File = File(ManualPushoverTest::class.java.getResource(filename)!!.file)
+    fun file(filename: String): File = File(ManualPushoverCall::class.java.getResource(filename)!!.file)
 
     fun waiting(timeInSeconds: Long) {
         logger.info { "Waiting $timeInSeconds seconds..." }
