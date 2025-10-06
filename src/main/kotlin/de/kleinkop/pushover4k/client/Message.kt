@@ -27,9 +27,7 @@ data class Message(
             requireNotNull(expire) { "Expiration value required for emergency messages" }
         }
 
-        if (html && monospace) {
-            throw IllegalArgumentException("Don't use options html and monospace together")
-        }
+        require((html && monospace).not()) { "Don't use options html and monospace together" }
     }
 }
 

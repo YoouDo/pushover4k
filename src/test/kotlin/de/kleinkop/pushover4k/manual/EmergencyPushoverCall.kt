@@ -6,7 +6,7 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 
 class EmergencyPushoverCall {
-    companion object : ManualPushoverTest() {
+    companion object : ManualPushoverCall() {
 
         @JvmStatic
         fun main(vararg arg: String) {

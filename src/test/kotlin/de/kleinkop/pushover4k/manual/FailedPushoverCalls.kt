@@ -4,7 +4,7 @@ import de.kleinkop.pushover4k.client.Message
 
 class FailedPushoverCalls {
 
-    companion object : ManualPushoverTest() {
+    companion object : ManualPushoverCall() {
         @JvmStatic
         fun main(vararg args: String) {
             val response = failingPushover().sendMessage(

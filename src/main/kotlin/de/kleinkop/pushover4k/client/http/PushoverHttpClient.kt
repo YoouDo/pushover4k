@@ -16,7 +16,6 @@ import io.github.resilience4j.retry.RetryConfig
 import io.micrometer.core.instrument.MeterRegistry
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import java.net.URI
 import java.net.http.HttpClient
