@@ -144,10 +144,19 @@ tasks.jacocoTestReport {
     }
 }
 
+tasks.named("sonar") {
+    dependsOn(tasks.jacocoTestReport)
+}
+
 sonar {
     properties {
         property("sonar.projectKey", "YoouDo_pushover4k")
         property("sonar.organization", "yooudo")
         property("sonar.host.url", "https://sonarcloud.io")
+
+        property(
+            "sonar.coverage.jacoco.xmlReportPaths",
+            layout.buildDirectory.file("reports/jacoco/test/jacocoTestReport.xml").get(),
+        )
     }
 }
