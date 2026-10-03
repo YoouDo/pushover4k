@@ -26,7 +26,7 @@ junit-launcher = { module = "org.junit.platform:junit-platform-launcher", versio
 mockk = { module = "io.mockk:mockk", version = "1.14.11" }
 wiremock = { module = "com.github.tomakehurst:wiremock-jre8", version = "3.0.1" }
 
-kotest-assertions = { module = "io.kotest:kotest-assertions-core-jvm", version = "6.2.4" }
+kotest-assertions = { module = "io.kotest:kotest-assertions-core-jvm", version = "6.2.5" }
 
 [bundles]
 junit-runtime = [
